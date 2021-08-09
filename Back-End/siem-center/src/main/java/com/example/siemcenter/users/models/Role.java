@@ -1,4 +1,4 @@
-package com.example.siemcenter.users;
+package com.example.siemcenter.users.models;
 
 public enum Role {
     USER, ADMIN, OPERATOR
