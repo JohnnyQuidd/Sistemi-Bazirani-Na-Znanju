@@ -1,6 +1,7 @@
 package com.example.siemcenter.users.services.implementation;
 
 import com.example.siemcenter.users.dto.UserDTO;
+import com.example.siemcenter.users.dto.UserLoginDTO;
 import com.example.siemcenter.users.models.RiskCategory;
 import com.example.siemcenter.users.models.Role;
 import com.example.siemcenter.users.models.User;
@@ -10,10 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
@@ -40,6 +40,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .role(Role.USER)
                 .build();
         saveUser(user);
+    }
+
+    @Override
+    public String loginUser(UserLoginDTO loginDTO) {
+        User user = userRepository.findByUsername(loginDTO.getUsername())
+                .orElse(null);
+
+        if(user != null && BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
+            return user.getRole().toString();
+        }
+
+        return null;
     }
 
     @Override

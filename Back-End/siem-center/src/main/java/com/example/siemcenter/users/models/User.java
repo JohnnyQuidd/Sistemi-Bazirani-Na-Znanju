@@ -16,8 +16,7 @@ import java.util.UUID;
 @Builder
 public class User {
     @Id
-    @SequenceGenerator(name = SequenceConstants.USER_SEQUENCE, sequenceName = SequenceConstants.USER_SEQUENCE, allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceConstants.USER_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     @Size(min = 5, max = 30, message = "Username must be between 5 and 30 characters long")
