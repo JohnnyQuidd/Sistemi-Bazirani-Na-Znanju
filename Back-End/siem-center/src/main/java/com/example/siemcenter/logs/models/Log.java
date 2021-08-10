@@ -4,6 +4,7 @@ import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.users.models.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +15,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Logs {
+@Builder
+public class Log {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

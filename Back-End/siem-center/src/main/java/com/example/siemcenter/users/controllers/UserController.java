@@ -1,7 +1,7 @@
 package com.example.siemcenter.users.controllers;
 
-import com.example.siemcenter.users.dto.UserDTO;
-import com.example.siemcenter.users.dto.UserLoginDTO;
+import com.example.siemcenter.users.dtos.UserDTO;
+import com.example.siemcenter.users.dtos.UserLoginDTO;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

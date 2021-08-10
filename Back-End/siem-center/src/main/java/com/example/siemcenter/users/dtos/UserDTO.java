@@ -1,4 +1,4 @@
-package com.example.siemcenter.users.dto;
+package com.example.siemcenter.users.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
