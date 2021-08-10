@@ -2,16 +2,14 @@ package com.example.siemcenter.users.controllers;
 
 import com.example.siemcenter.users.dto.UserDTO;
 import com.example.siemcenter.users.dto.UserLoginDTO;
-import com.example.siemcenter.users.requests.RegisterNewUser;
+import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/user")
@@ -21,6 +19,28 @@ public class UserController {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable("id") long id) {
+        User user = userService.findUserById(id);
+
+        if(user != null) {
+            return ResponseEntity.ok(user);
+        }
+
+        return ResponseEntity.status(404).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    @PutMapping
+    public void updateUser(@Valid @RequestBody UserDTO userDTO) {
+        userService.updateUser(userDTO);
     }
 
     @PostMapping(path = "/register")

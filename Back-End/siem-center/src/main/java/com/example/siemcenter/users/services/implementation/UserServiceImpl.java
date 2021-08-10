@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
     private UserRepository userRepository;
@@ -52,6 +54,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         return null;
+    }
+
+    @Override
+    public User findUserById(long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAllUsers();
+    }
+
+    @Override
+    public void updateUser(UserDTO userDTO) {
+        User user = userRepository.findByUsername(userDTO.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
+
+        user.setRole(Role.valueOf(userDTO.getRole()));
+        user.setRiskCategory(RiskCategory.valueOf(userDTO.getRiskCategory()));
+        userRepository.save(user);
     }
 
     @Override

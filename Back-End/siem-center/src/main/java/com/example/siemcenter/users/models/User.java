@@ -1,13 +1,15 @@
 package com.example.siemcenter.users.models;
 
-import com.example.siemcenter.constants.SequenceConstants;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -23,6 +25,7 @@ public class User {
     private String username;
     @NotNull
     @Size(min = 5, max = 20, message = "Password must be between 5 and 20 characters long")
+    @JsonIgnore
     private String password;
     private LocalDateTime lastTimeUserWasActive;
     @NotNull

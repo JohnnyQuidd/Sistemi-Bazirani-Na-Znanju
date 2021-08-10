@@ -1,6 +1,9 @@
 package com.example.siemcenter.users.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -18,4 +21,6 @@ public class UserDTO {
     private String password;
     @NotNull
     private String role;
+    @NotNull
+    private String riskCategory = "LOW";
 }
