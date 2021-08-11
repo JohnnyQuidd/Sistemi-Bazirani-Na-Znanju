@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 @Transactional(readOnly = true)
 public interface SoftwareRepository extends JpaRepository<Software, Long> {
-    List<Software> getAllSoftware();
-    Optional<Software> getSoftwareById(long id);
-    Optional<Software> getSoftwareByName(String name);
+    List<Software> findAll();
+    Optional<Software> findSoftwareById(long id);
+    Optional<Software> findSoftwareByName(String name);
     boolean existsByName(String name);
 }

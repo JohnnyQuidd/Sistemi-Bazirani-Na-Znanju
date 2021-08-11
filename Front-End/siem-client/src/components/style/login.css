@@ -1,0 +1,79 @@
+body::before {
+    content: '';
+    position: fixed;
+    top: -6rem;
+    left: 0;
+    height: 150%;
+    width: 100%;
+    z-index: -1;
+    background-color: var(--color-darkblue);
+    background-image: linear-gradient(
+        115deg,
+        rgba(129, 228, 233, 0.5),
+        rgba(220, 242, 243, 0.2)
+      ), url('../../assets/images/background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* filter: blur(3px); */
+    /* transform: scale(1.7); */
+}
+
+.login-wrapper {
+    width: 80%;
+    margin-top: 30%;
+    margin-left: 10%;
+    background-color: rgba(151, 154, 155, 0.5);
+    padding: 1em 0;
+    border-radius: 5%;
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+#username-wrapper, #password-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin: 1em 0.5em;
+}
+
+#username, #password {
+    font-size: 1.2rem;
+    padding-left: 0.5rem;
+    border-radius: 10px;
+    border: none;
+}
+
+label {
+    color: #eee;
+}
+
+#login {
+    margin-top: 2rem;
+    margin-left: 25%;
+    width: 50%;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    border: none;
+    background: royalblue;
+    padding: 0.5rem 0.1rem;
+    color: #eee;
+    cursor: pointer;
+}
+
+@media only screen and (min-width: 720px) {
+    .login-wrapper {
+        margin-top: 10rem;
+        width: 40%;
+        margin-left: 30%;
+        border-radius: 15px;
+    }
+
+    #username-wrapper, #password-wrapper {
+        margin: 1em 2em;
+    }
+
+    #username, #password {
+        margin-top: 0.5rem;
+    }
+    
+}
