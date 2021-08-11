@@ -1,15 +1,11 @@
 package com.example.siemcenter.common.services;
 
-import com.example.siemcenter.common.repositories.DeviceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.example.siemcenter.common.models.Device;
 
-@Service
-public class DeviceService {
-    private DeviceRepository deviceRepository;
+import java.util.List;
 
-    @Autowired
-    public DeviceService(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
+public interface DeviceService {
+    List<Device> getAllDevices();
+    Device getDeviceByIpAddress(String ipAddress);
+    void insertNewDevice(Device device);
 }

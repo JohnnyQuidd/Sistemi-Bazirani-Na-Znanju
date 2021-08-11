@@ -20,6 +20,11 @@ public class Device implements Comparable<Device> {
     private String ipAddress;
     private boolean isMalicious;
 
+    public Device(String ipAddress) {
+        this.ipAddress = ipAddress;
+        isMalicious = false;
+    }
+
     @Override
     public int compareTo(Device device) {
         return device.getIpAddress().compareTo(this.getIpAddress());
