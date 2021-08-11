@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findAll();
     Optional<Device> findByIpAddress(String ipAddress);
+    boolean existsByIpAddress(String ipAddress);
 }

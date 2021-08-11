@@ -1,6 +1,7 @@
 package com.example.siemcenter.logs.models;
 
 import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.models.OperatingSystem;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.users.models.User;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,10 @@ public class Log {
     @ManyToOne
     @JoinColumn(name = "software_id")
     private Software software;
+
+    @ManyToOne
+    @JoinColumn(name = "os_id")
+    private OperatingSystem os;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

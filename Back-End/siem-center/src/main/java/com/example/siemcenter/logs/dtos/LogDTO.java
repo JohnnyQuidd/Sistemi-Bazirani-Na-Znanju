@@ -16,7 +16,9 @@ public class LogDTO {
     @NotNull
     private LogType logType;
     private String ipAddress;
+    @NotBlank
     private String operatingSystem;
+    @NotBlank
     private String software;
     @NotBlank
     private String username;

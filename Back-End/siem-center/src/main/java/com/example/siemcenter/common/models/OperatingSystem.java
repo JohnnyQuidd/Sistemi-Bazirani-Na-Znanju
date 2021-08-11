@@ -13,18 +13,18 @@ import javax.persistence.Id;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Software implements Comparable<Software> {
+public class OperatingSystem implements Comparable<OperatingSystem> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
 
-    public Software(String name) {
+    public OperatingSystem(String name) {
         this.name = name;
     }
 
     @Override
-    public int compareTo(Software software) {
-        return software.getName().compareTo(this.getName());
+    public int compareTo(OperatingSystem os) {
+        return os.getName().compareTo(this.getName());
     }
 }
