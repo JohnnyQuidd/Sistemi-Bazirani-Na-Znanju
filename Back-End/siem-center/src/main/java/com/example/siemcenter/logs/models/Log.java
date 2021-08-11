@@ -1,6 +1,7 @@
 package com.example.siemcenter.logs.models;
 
 import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.common.models.OperatingSystem;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.users.models.User;
@@ -23,8 +24,8 @@ public class Log {
     private long id;
     private String message;
     private LocalDateTime timestamp;
-
     private LogType logType;
+    private FactStatus factStatus;
 
     @ManyToOne
     @JoinColumn(name = "device_id")
