@@ -19,12 +19,12 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<Software> getAllSoftware() {
-        return softwareRepository.getAllSoftware();
+        return softwareRepository.findAll();
     }
 
     @Override
     public Software getSoftwareByName(String name) {
-        return softwareRepository.getSoftwareByName(name)
+        return softwareRepository.findSoftwareByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Software with provided name doesn't exist"));
     }
 

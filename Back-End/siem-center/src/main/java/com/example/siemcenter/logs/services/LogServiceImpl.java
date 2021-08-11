@@ -81,7 +81,7 @@ public class LogServiceImpl implements LogService {
     }
 
     private Software extractSoftware(String name) {
-        return softwareRepository.getSoftwareByName(name)
+        return softwareRepository.findSoftwareByName(name)
                 .orElseGet(() -> {
                     Software software = new Software(name);
                     softwareRepository.save(software);
