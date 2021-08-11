@@ -1,4 +1,4 @@
-package com.example.siemcenter.users.repository;
+package com.example.siemcenter.users.repositories;
 import com.example.siemcenter.users.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

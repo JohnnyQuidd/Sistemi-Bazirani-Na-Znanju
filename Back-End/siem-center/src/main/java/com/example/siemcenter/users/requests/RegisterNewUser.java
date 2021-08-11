@@ -1,6 +1,6 @@
 package com.example.siemcenter.users.requests;
 
-import com.example.siemcenter.users.dto.UserDTO;
+import com.example.siemcenter.users.dtos.UserDTO;
 
 import javax.validation.constraints.NotNull;
 

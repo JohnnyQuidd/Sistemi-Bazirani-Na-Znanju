@@ -1,11 +1,11 @@
 package com.example.siemcenter.users.services.implementation;
 
-import com.example.siemcenter.users.dto.UserDTO;
-import com.example.siemcenter.users.dto.UserLoginDTO;
+import com.example.siemcenter.users.dtos.UserDTO;
+import com.example.siemcenter.users.dtos.UserLoginDTO;
 import com.example.siemcenter.users.models.RiskCategory;
 import com.example.siemcenter.users.models.Role;
 import com.example.siemcenter.users.models.User;
-import com.example.siemcenter.users.repository.UserRepository;
+import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
