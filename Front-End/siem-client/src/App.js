@@ -1,9 +1,10 @@
 import './App.css';
+import Wrapper from './components/util/Wrapper';
 
 function App() {
   return (
     <div className="App">
-      <h1> SIEM Client </h1>
+      <Wrapper />
     </div>
   );
 }
