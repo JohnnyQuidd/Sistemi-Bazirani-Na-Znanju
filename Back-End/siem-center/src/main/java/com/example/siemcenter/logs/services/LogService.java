@@ -8,4 +8,5 @@ import java.util.List;
 public interface LogService {
     void createLog(LogDTO logDTO);
     List<Log> getAllLogs();
+    void update(Log log);
 }

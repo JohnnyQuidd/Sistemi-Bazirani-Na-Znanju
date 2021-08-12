@@ -1,0 +1,16 @@
+dialect "mvel"
+
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.alarms.models.Alarm;
+
+query fetchAllLogs
+    $allLogs: Log()
+end
+
+query fetchAllAlarms
+    $allAlarms: Alarm()
+end
+
+query fetchAlarmsForRuleName(String $ruleName)
+    $alarms: Alarm(forRule == $ruleName)
+end

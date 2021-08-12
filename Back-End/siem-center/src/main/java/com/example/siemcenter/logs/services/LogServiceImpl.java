@@ -106,4 +106,9 @@ public class LogServiceImpl implements LogService {
     public List<Log> getAllLogs() {
         return logRepository.findAll();
     }
+
+    @Override
+    public void update(Log log) {
+        logRepository.save(log);
+    }
 }
