@@ -41,9 +41,9 @@ rule "#1 Failed to login from a device that has already failed to log in" salien
 
         for(Log log: $logs) {
             $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
         }
 
-        // TODO: Insert alarm into Database
         alarmService.insertNewAlarm($newAlarm);
 
         insert($newAlarm);
