@@ -49,3 +49,28 @@ rule "#1 Failed to login from a device that has already failed to log in" salien
         insert($newAlarm);
         logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
 end
+
+rule "#2 Failed to login with a same username multiple times" salience 5
+    when
+        $currentLog: Log()
+        $logs: List(size > 1) from collect(
+            $log: Log(logType==LogType.ERROR,
+                      user.getUsername==$currentLog.getUser().getUsername())
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Multiple failed attempts to log with same username");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#2 Failed to login with a same username multiple times");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
+end
