@@ -1,0 +1,11 @@
+dialect  "mvel"
+import org.slf4j.Logger;
+
+global Logger logger;
+
+rule "A new Log inserted into working memory" salience 10
+    when
+        $log: Log()
+    then
+        logger.info("A new log is inserted into working memory");
+end

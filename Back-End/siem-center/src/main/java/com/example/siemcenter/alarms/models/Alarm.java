@@ -23,6 +23,7 @@ public class Alarm {
     private String message;
     private LocalDateTime timestamp;
     private FactStatus factStatus;
+    private String ruleTriggered;
 
     @JsonIgnore
     @ManyToMany

@@ -1,0 +1,6 @@
+dialect  "mvel"
+
+//rule "#1 Failed login attempt on the same machine"
+   //when
+    //then
+//end

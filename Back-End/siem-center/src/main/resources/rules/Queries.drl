@@ -12,5 +12,5 @@ query fetchAllAlarms
 end
 
 query fetchAlarmsForRuleName(String $ruleName)
-    $alarms: Alarm(forRule == $ruleName)
+    $alarms: Alarm(ruleTriggered == $ruleName)
 end

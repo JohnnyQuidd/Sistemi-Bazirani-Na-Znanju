@@ -47,7 +47,7 @@ public class LogServiceImpl implements LogService {
         logRepository.save(log);
     }
 
-    private Log createLogFromDTO(LogDTO logDTO) {
+    public Log createLogFromDTO(LogDTO logDTO) {
         LocalDateTime timestamp = LocalDateTime.now();
         if(logDTO.getTimestamp() != null) {
             timestamp = logDTO.getTimestamp();
