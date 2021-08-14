@@ -83,7 +83,7 @@ rule "#3 Log with type ERROR occurred" salience 5
         $newAlarm.setRuleTriggered("#3 Log with type ERROR occurred");
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedLogs.add($log.getUser());
+        $newAlarm.getRelatedUsers.add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
@@ -101,9 +101,35 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         $newAlarm.setRuleTriggered("#4 An attempt to log in an account that was inactive for 90 days or more");
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedLogs.add($log.getUser());
+        $newAlarm.getRelatedUsers.add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
         logger.info("User tried to log in an account that was inactive for 90 days or more");
+end
+
+rule "#5 15 or more failed attempts to login from same device in a time span of 5 days" salience 5
+    when
+        $device: Device() from deviceRepository.findAll()
+        $logs: List(size >= 5) from collect(
+            Log(
+                message contains "login",
+                device == $device
+            ) over window:time(5d)
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("15 or more failed attempts to login from same device in a time span of 5 days");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#5 15 or more failed attempts to login from same device in a time span of 5 days");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("15 or more failed attempts to login from same device in a time span of 5 days");
 end

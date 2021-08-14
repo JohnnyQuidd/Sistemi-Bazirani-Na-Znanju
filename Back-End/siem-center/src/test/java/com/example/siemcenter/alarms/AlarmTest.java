@@ -107,4 +107,6 @@ public class AlarmTest {
 
         ksession.insert(log1);
     }
+
+
 }
