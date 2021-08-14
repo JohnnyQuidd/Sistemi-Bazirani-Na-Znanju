@@ -1,16 +1,17 @@
 package com.example.siemcenter.rules.services;
 
 import com.example.siemcenter.alarms.models.Alarm;
-import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
-import com.example.siemcenter.logs.services.LogService;
 import com.example.siemcenter.rules.repositories.RuleRepository;
-import org.kie.api.KieBaseConfiguration;
+import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
-import org.kie.internal.utils.KieHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,28 +21,25 @@ import java.util.Map;
 
 @Service
 public class RuleServiceImpl implements RuleService {
+    private Logger logger = LoggerFactory.getLogger(RuleServiceImpl.class);
     private RuleRepository ruleRepository;
-    private LogService logService;
-    //private final DataProviderCompiler compiler;
-    private final KieHelper kieHelper;
-    private final KieBaseConfiguration baseConfiguration;
-    private final KieContainer kieContainer;
     private KieSession session;
+    private DeviceRepository deviceRepository;
+    private AlarmService alarmService;
+
 
     @Autowired
     public RuleServiceImpl(RuleRepository ruleRepository,
-                           LogService logService,
-                           KieHelper kieHelper,
-                           KieBaseConfiguration baseConfiguration,
-                           KieContainer kieContainer,
-                           KieSession session) {
+                           DeviceRepository deviceRepository,
+                           AlarmService alarmService) {
         this.ruleRepository = ruleRepository;
-        this.logService = logService;
-        //this.compiler = compiler;
-        this.kieHelper = kieHelper;
-        this.baseConfiguration = baseConfiguration;
-        this.kieContainer = kieContainer;
-        this.session = session;
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kc = ks.newKieClasspathContainer();
+        session = kc.newKieSession();
+
+        session.setGlobal("logger", logger);
+        session.setGlobal("deviceRepository", deviceRepository);
+        session.setGlobal("alarmService", alarmService);
     }
 
     @Override
@@ -51,9 +49,8 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public void insertLog(Log log) {
-        this.session.insert(log);
-        log.setFactStatus(FactStatus.ACTIVE);
-        this.logService.update(log);
+        session.insert(log);
+        session.fireAllRules();
     }
 
     @Override

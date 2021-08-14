@@ -1,11 +1,51 @@
 dialect  "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+
+
 global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmService alarmService;
 
 rule "A new Log inserted into working memory" salience 10
     when
         $log: Log()
     then
         logger.info("A new log is inserted into working memory");
+end
+
+rule "#1 Failed to login from a device that has already failed to log in" salience 5
+    when
+        $device: Device() from deviceRepository.findAll()
+        $logs: List(size > 1) from collect(
+            $log: Log(message contains "login",
+                      logType==LogType.ERROR,
+                      device.getIpAddress() == $device.getIpAddress())
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Multiple failed attempts to log from same device with IP");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#1 Failed to login from a device that has already failed to log in");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+        }
+
+        // TODO: Insert alarm into Database
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
 end

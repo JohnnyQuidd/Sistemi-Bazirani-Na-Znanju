@@ -1,7 +1,6 @@
 package com.example.siemcenter.common.models;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

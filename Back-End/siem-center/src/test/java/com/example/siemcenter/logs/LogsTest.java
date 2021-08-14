@@ -51,13 +51,13 @@ public class LogsTest {
                 .build();
 
         Log log = Log.builder()
-                .logType(LogType.ERROR)
+                .logType(LogType.WARNING)
                 .device(new Device("192.168.0.1"))
                 .os(new OperatingSystem("Windows"))
                 .software(new Software("Adobe XD"))
                 .user(user)
                 .timestamp(LocalDateTime.now())
-                .message("Failed logging attempt")
+                .message("Failed login attempt")
                 .build();
 
         ksession.insert(log);
