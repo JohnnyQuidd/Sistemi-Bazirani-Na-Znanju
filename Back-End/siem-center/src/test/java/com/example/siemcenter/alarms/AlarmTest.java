@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class AlarmTest {
@@ -83,7 +84,27 @@ public class AlarmTest {
         ksession.insert(log2);
         ksession.insert(log3);
 
-        //List<Alarm> alarmList = ruleService.getAlarmForRule("#1 Failed to login from a device that has already failed to log in");
-        //assertEquals(1, alarmList.size());
+    }
+
+    @Test
+    public void loggingInToAccountThatIsInactiveForMoreThan90Days() {
+        assertNotNull(ksession);
+        assertNotNull(logger);
+
+        ksession.setGlobal("logger", logger);
+        ksession.setGlobal("deviceRepository", deviceRepository);
+        ksession.setGlobal("alarmService", alarmService);
+
+        Log log1 = Log.builder()
+                .logType(LogType.INFORMATION)
+                .device(new Device("192.168.0.1"))
+                .os(new OperatingSystem("Windows"))
+                .software(new Software("Adobe XD"))
+                .user(User.builder().lastTimeUserWasActive(LocalDateTime.now().minusDays(95)).build())
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        ksession.insert(log1);
     }
 }
