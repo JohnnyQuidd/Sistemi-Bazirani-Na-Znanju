@@ -107,3 +107,32 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         insert($newAlarm);
         logger.info("User tried to log in an account that was inactive for 90 days or more");
 end
+
+rule "#5 15 or more failed attempts to login from a same device over a course of 5 days" salience 5
+    when
+        $device: Device() from deviceRepository.findAll()
+        $logs: List(size >= 15) from collect (
+            Log(
+                message contains "login",
+                device.getIpAddress == $device.getIpAddress()
+            ) over window:time(5d)
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("User failed to login 15 times or more from a same device over the course of 5 days");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#5 15 or more failed attempts to login from a same device over a course of 5 days");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("User failed to login 15 times or more from a same device over the course of 5 days");
+end
+
+
+

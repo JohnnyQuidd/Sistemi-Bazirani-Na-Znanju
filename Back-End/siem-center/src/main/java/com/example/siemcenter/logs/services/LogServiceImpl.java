@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -72,6 +73,7 @@ public class LogServiceImpl implements LogService {
                 .logType(logDTO.getLogType())
                 .factStatus(FactStatus.ACTIVE)
                 .message(logDTO.getMessage())
+                ._timestamp(new Date())
                 .build();
 
     }
