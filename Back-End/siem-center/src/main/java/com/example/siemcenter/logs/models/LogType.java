@@ -1,5 +1,5 @@
 package com.example.siemcenter.logs.models;
 
 public enum LogType {
-    WARNING, ERROR
+    WARNING, ERROR, INFORMATION
 }

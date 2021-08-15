@@ -11,6 +11,7 @@ import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.dtos.LogDTO;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.repositories.LogRepository;
+import com.example.siemcenter.rules.services.RuleService;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,26 +29,30 @@ public class LogServiceImpl implements LogService {
     private SoftwareRepository softwareRepository;
     private OperatingSystemRepository osRepository;
     private UserRepository userRepository;
+    private RuleService ruleService;
 
     @Autowired
     public LogServiceImpl(LogRepository logRepository,
                           DeviceRepository deviceRepository,
                           SoftwareRepository softwareRepository,
                           OperatingSystemRepository operatingSystemRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          RuleService ruleService) {
         this.logRepository = logRepository;
         this.deviceRepository = deviceRepository;
         this.softwareRepository = softwareRepository;
         this.osRepository = operatingSystemRepository;
         this.userRepository = userRepository;
+        this.ruleService = ruleService;
     }
 
     public void createLog(@Valid @RequestBody LogDTO logDTO){
         Log log = createLogFromDTO(logDTO);
         logRepository.save(log);
+        ruleService.insertLog(log);
     }
 
-    private Log createLogFromDTO(LogDTO logDTO) {
+    public Log createLogFromDTO(LogDTO logDTO) {
         LocalDateTime timestamp = LocalDateTime.now();
         if(logDTO.getTimestamp() != null) {
             timestamp = logDTO.getTimestamp();
@@ -105,5 +110,10 @@ public class LogServiceImpl implements LogService {
 
     public List<Log> getAllLogs() {
         return logRepository.findAll();
+    }
+
+    @Override
+    public void update(Log log) {
+        logRepository.save(log);
     }
 }

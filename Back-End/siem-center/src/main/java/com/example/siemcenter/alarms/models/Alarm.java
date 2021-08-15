@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -23,6 +24,7 @@ public class Alarm {
     private String message;
     private LocalDateTime timestamp;
     private FactStatus factStatus;
+    private String ruleTriggered;
 
     @JsonIgnore
     @ManyToMany
@@ -30,7 +32,7 @@ public class Alarm {
             joinColumns = @JoinColumn(name = "alarm_id"),
             inverseJoinColumns = @JoinColumn(name = "log_id")
     )
-    private List<Log> relatedLogs;
+    private List<Log> relatedLogs = new LinkedList<>();
 
     @JsonIgnore
     @ManyToMany
@@ -38,5 +40,5 @@ public class Alarm {
             joinColumns = @JoinColumn(name = "alarm_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> relatedUsers;
+    private List<User> relatedUsers = new LinkedList<>();
 }

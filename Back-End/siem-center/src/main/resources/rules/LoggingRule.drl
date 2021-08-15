@@ -1,0 +1,109 @@
+dialect  "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+import com.example.siemcenter.users.models.User;
+import com.example.siemcenter.users.repositories.UserRepository;
+
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmService alarmService;
+global UserRepository userRepository;
+
+
+rule "#1 Failed to login from a device that has already failed to log in" salience 5
+    when
+        $device: Device() from deviceRepository.findAll()
+        $logs: List(size > 1) from collect(
+            $log: Log(message contains "login",
+                      logType==LogType.ERROR,
+                      device.getIpAddress() == $device.getIpAddress())
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Multiple failed attempts to log from same device with IP");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#1 Failed to login from a device that has already failed to log in");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
+end
+
+// TODO: Pick up only those Logs that haven't triggered an alarm for rule #2 already, not every log
+rule "#2 Failed to login with a same username multiple times" salience 5
+    when
+        $currentLog: Log()
+        $logs: List(size > 1) from collect(
+            $log: Log(logType==LogType.ERROR,
+                      user.getUsername==$currentLog.getUser().getUsername())
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Multiple failed attempts to log with same username");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#2 Failed to login with a same username multiple times");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs.add(log);
+            $newAlarm.getRelatedUsers.add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
+end
+
+rule "#3 Log with type ERROR occurred" salience 5
+    when
+        $log: Log(logType==LogType.ERROR)
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Log with type ERROR occurred");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#3 Log with type ERROR occurred");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+        $newAlarm.getRelatedLogs.add($log);
+        $newAlarm.getRelatedUsers.add($log.getUser());
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("Log with type ERROR triggered an alarm");
+end
+
+rule "#4 An attempt to log in an account that was inactive for 90 days or more" salience 5
+    when
+        $user: User( lastTimeUserWasActive.isBefore(LocalDateTime.now().minusDays(90)) ) from userRepository.findAll()
+        $log: Log(message contains "login", user == $user)
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("User tried to log in an account that was inactive for 90 days or more");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#4 An attempt to log in an account that was inactive for 90 days or more");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+        $newAlarm.getRelatedLogs.add($log);
+        $newAlarm.getRelatedUsers.add($log.getUser());
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("User tried to log in an account that was inactive for 90 days or more");
+end
