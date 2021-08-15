@@ -83,7 +83,7 @@ rule "#3 Log with type ERROR occurred" salience 5
         $newAlarm.setRuleTriggered("#3 Log with type ERROR occurred");
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedLogs.add($log.getUser());
+        $newAlarm.getRelatedUsers.add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
@@ -101,7 +101,7 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         $newAlarm.setRuleTriggered("#4 An attempt to log in an account that was inactive for 90 days or more");
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedLogs.add($log.getUser());
+        $newAlarm.getRelatedUsers.add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
