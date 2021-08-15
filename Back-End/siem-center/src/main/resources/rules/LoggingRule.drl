@@ -167,4 +167,25 @@ rule "#6 Successful logins from same user from different devices in a time span 
         logger.info("User logged in from different devices in a time span less than 10 seconds");
 end
 
+// TODO: add some additional time so rule doesn't trigger immediately upon log insert
+rule "#7 Threat registered by antivirus is not dealt with in an hour from time of detection" salience 5
+    when
+        $log1: Log(message contains "Antivirus detected threat")
+        not ( Log(message contains "Antivirus eliminated threat",
+                            timestamp.isBefore($log1.getTimestamp().plusHours(1))
+                          ))
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Threat registered by antivirus is not dealt with in an hour from time of detection");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#7 Threat registered by antivirus is not dealt with in an hour from time of detection");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        $newAlarm.getRelatedLogs.add($log1);
+        $newAlarm.getRelatedUsers.add($log1.getUser());
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("Threat registered by antivirus is not dealt with in an hour from time of detection");
+end
 
