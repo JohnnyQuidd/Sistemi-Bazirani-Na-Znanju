@@ -5,7 +5,7 @@ import com.example.siemcenter.alarms.services.AlarmService;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.repositories.RuleRepository;
-import com.example.siemcenter.users.services.UserService;
+import com.example.siemcenter.users.repositories.UserRepository;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -27,13 +27,19 @@ public class RuleServiceImpl implements RuleService {
     private KieSession session;
     private DeviceRepository deviceRepository;
     private AlarmService alarmService;
+    private UserRepository userRepository;
 
 
     @Autowired
     public RuleServiceImpl(RuleRepository ruleRepository,
                            DeviceRepository deviceRepository,
-                           AlarmService alarmService) {
+                           AlarmService alarmService,
+                           UserRepository userRepository) {
         this.ruleRepository = ruleRepository;
+        this.deviceRepository = deviceRepository;
+        this.alarmService = alarmService;
+        this.userRepository = userRepository;
+
         KieServices ks = KieServices.Factory.get();
         KieContainer kc = ks.newKieClasspathContainer();
         session = kc.newKieSession();
@@ -41,6 +47,7 @@ public class RuleServiceImpl implements RuleService {
         session.setGlobal("logger", logger);
         session.setGlobal("deviceRepository", deviceRepository);
         session.setGlobal("alarmService", alarmService);
+        session.setGlobal("userRepository", userRepository);
     }
 
     @Override

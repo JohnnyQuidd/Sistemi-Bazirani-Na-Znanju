@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Data
@@ -42,4 +43,6 @@ public class Log {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    private Date _timestamp;
 }
