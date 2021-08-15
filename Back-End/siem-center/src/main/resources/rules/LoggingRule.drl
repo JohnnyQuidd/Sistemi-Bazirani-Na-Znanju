@@ -134,5 +134,37 @@ rule "#5 15 or more failed attempts to login from a same device over a course of
         logger.info("User failed to login 15 times or more from a same device over the course of 5 days");
 end
 
+rule "#6 Successful logins from same user from different devices in a time span of 10 seconds or less" salience 5
+    when
+        $user: User() from userRepository.findAll()
+        $device: Device() from deviceRepository.findAll()
+        $log1: Log( message contains "login",
+                   device.getIpAddress() == $device.getIpAddress(),
+                   user.getUsername() == $user.getUsername(),
+                   logType != LogType.ERROR
+                )
+        $log2: Log( this != $log1,
+                    message contains "login",
+                    device.getIpAddress() != $log1.getDevice().getIpAddress(),
+                    user.getUsername() == $user.getUsername(),
+                    logType != LogType.ERROR,
+                    timestamp.isAfter($log1.getTimestamp().minusSeconds(10)) &&
+                    timestamp.isBefore($log1.getTimestamp().plusSeconds(10))
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("User logged in from different devices in a time span less than 10 seconds");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#6 Successful logins from same user from different devices in a time span of 10 seconds or less");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        $newAlarm.getRelatedLogs.add($log1);
+        $newAlarm.getRelatedLogs.add($log2);
+        $newAlarm.getRelatedUsers.add($user);
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("User logged in from different devices in a time span less than 10 seconds");
+end
 
 
