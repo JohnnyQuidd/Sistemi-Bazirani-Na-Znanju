@@ -3,6 +3,7 @@ dialect  "mvel"
 import java.util.List;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
+import com.example.siemcenter.common.exceptions.ResourceNotFoundException;
 
 import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.repositories.DeviceRepository;
@@ -257,4 +258,22 @@ rule "#9 Over 10 days 7 or more threats detected from the same device" salience 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
         logger.info("Over 10 days 7 or more threats detected from the same device");
+end
+
+
+rule "#10 Login attempt from malicious device, regardless of type" salience 5
+    when
+        $log: Log(message contains "login", $ip: device.getIpAddress())
+        $device: Device(malicious == true) from deviceRepository.findByIpAddress($ip).orElse(null)
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Login attempt from malicious device, regardless of type");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#10 Login attempt from malicious device, regardless of type");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
+        insert($newAlarm);
+        logger.info("Login attempt from malicious device, regardless of type");
 end
