@@ -6,11 +6,21 @@ import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.repositories.UserRepository;
+import org.drools.core.ClockType;
+import org.kie.api.KieBase;
+import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
+import org.kie.api.builder.KieBuilder;
+import org.kie.api.builder.KieFileSystem;
+import org.kie.api.builder.Message;
+import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.KieSessionConfiguration;
+import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
+import org.kie.internal.io.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,14 +50,23 @@ public class RuleServiceImpl implements RuleService {
         this.alarmService = alarmService;
         this.userRepository = userRepository;
 
-        KieServices ks = KieServices.Factory.get();
-        KieContainer kc = ks.newKieClasspathContainer();
-        session = kc.newKieSession();
+        session = setUpSessionForStreamProcessingMode();
 
         session.setGlobal("logger", logger);
         session.setGlobal("deviceRepository", deviceRepository);
         session.setGlobal("alarmService", alarmService);
         session.setGlobal("userRepository", userRepository);
+    }
+
+    private KieSession setUpSessionForStreamProcessingMode() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kc = ks.newKieClasspathContainer();
+
+        KieSessionConfiguration ksconf = ks.newKieSessionConfiguration();
+        ksconf.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.getId()));
+
+        KieSession session = kc.newKieSession("session1", ksconf);
+        return session;
     }
 
     @Override

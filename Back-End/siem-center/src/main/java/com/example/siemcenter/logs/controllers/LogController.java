@@ -23,7 +23,8 @@ public class LogController {
 
     @PostMapping
     public void insertNewLog(@Valid @RequestBody LogDTO logDTO, HttpServletRequest request) {
-        logDTO.setIpAddress(request.getRemoteAddr());
+        // TODO: Get ipAddress from request
+        // logDTO.setIpAddress(request.getRemoteAddr());
         logsService.createLog(logDTO);
     }
 

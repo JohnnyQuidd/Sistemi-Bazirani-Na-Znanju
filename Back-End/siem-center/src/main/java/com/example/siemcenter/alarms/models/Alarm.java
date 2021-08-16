@@ -25,6 +25,7 @@ public class Alarm {
     private LocalDateTime timestamp;
     private FactStatus factStatus;
     private String ruleTriggered;
+    private String ipAddress;
 
     @JsonIgnore
     @ManyToMany
