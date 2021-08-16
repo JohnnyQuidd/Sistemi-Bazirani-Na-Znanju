@@ -1,0 +1,99 @@
+dialect "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+import com.example.siemcenter.users.models.User;
+import com.example.siemcenter.users.repositories.UserRepository;
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmService alarmService;
+global UserRepository userRepository;
+
+rule "#12 DDoS attack is detected if system receives 50 or more request in 60 seconds" salience 5
+    when
+        $logs: List(size >= 50) from collect(
+            Log() over window:time(60s)
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("DDoS attack");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#12 DDoS attack is detected if system receives 50 or more request in 60 seconds");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("DDoS attack");
+end
+
+rule "#13 DDoS attack that is targeting payment system triggers payment alarm" salience 5
+    when
+        $logs: List(size >=50) from collect (
+            Log(message.toLowerCase() contains "payment"
+                || message.toLowerCase() contains "pay"
+                || message.toLowerCase() contains "money"
+                || message.toLowerCase() contains "cash"
+                || message.toLowerCase() contains "credit card"
+            ) over window:time(60s)
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("DDoS attack regarding payment system");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#13 DDoS attack that is targeting payment system triggers payment alarm");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("#13 DDoS attack that is targeting payment system triggers payment alarm");
+end
+
+rule "#14 DDoS attack that is targeting login system" salience 5
+    when
+        $logs: List(size >= 50) from collect (
+            Log(message.toLowerCase() contains "login"
+                || message.toLowerCase() contains "register"
+                || message.toLowerCase() contains "sign-in"
+                || message.toLowerCase() contains "log in"
+                || message.toLowerCase() contains "log-in"
+            ) over window:time(60s)
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("DDoS attack regarding login system");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#14 DDoS attack that is targeting login system");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+
+        insert($newAlarm);
+        logger.info("#14 DDoS attack that is targeting login system");
+end
