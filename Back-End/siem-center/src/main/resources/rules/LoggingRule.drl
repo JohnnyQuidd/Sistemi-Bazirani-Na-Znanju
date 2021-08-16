@@ -14,7 +14,6 @@ import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 
-
 global Logger logger;
 global DeviceRepository deviceRepository;
 global AlarmService alarmService;
@@ -189,7 +188,6 @@ rule "#7 Threat registered by antivirus is not dealt with in an hour from time o
 end
 
 // If in last 90 seconds were 5 or more failed logins from same device to different accounts
-// TODO: set timestamp to - 90seconds
 rule "#8 Successful login to a system followed by a user information changed" salience 5
     when
         $log1: Log(message contains "User data changed",
@@ -207,7 +205,7 @@ rule "#8 Successful login to a system followed by a user information changed" sa
                 logType == LogType.ERROR,
                 device.getIpAddress() == $log1.getDevice().getIpAddress(),
                 user.getUsername() != $log1.getUser().getUsername(),
-                timestamp.isAfter($log1.getTimestamp().minusDays(1))
+                timestamp.isAfter($log1.getTimestamp().minusSeconds(90))
             )
         )
     then
@@ -227,4 +225,36 @@ rule "#8 Successful login to a system followed by a user information changed" sa
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
         logger.info("Successful login to a system followed by a user information changed");
+end
+
+rule "#9 Over 10 days 7 or more threats detected from the same device" salience 5
+    when
+        $log1: Log($ipAddress: device.getIpAddress())
+        $logs: List(size >= 10) from collect (
+            $log: Log(this != $log1,
+                      device.getIpAddress() == $ipAddress,
+                      message contains "Antivirus detected threat",
+                      timestamp.isAfter($log1.getTimestamp().minusDays(10))
+            )
+        )
+        not ( Alarm(ipAddress == $ipAddress,
+                    message == "Over 10 days 7 or more threats detected from the same device"
+            )
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Over 10 days 7 or more threats detected from the same device");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#9 Over 10 days 7 or more threats detected from the same device");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+        $newAlarm.setIpAddress($ipAddress);
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("Over 10 days 7 or more threats detected from the same device");
 end
