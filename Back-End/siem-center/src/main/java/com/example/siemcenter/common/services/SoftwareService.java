@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface SoftwareService {
     List<Software> getAllSoftware();
+
     Software getSoftwareByName(String name);
+
     void insertNewSoftware(Software software);
 }

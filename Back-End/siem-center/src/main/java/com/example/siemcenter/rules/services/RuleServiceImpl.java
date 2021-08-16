@@ -7,20 +7,13 @@ import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.repositories.UserRepository;
 import org.drools.core.ClockType;
-import org.kie.api.KieBase;
-import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieFileSystem;
-import org.kie.api.builder.Message;
-import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
-import org.kie.internal.io.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +76,8 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<Log> getLogs() {
         List<Log> logs = new LinkedList<>();
-        QueryResults allLogs = this.session.getQueryResults( "fetchAllLogs" );
-        for ( QueryResultsRow singleRow : allLogs ) {
+        QueryResults allLogs = this.session.getQueryResults("fetchAllLogs");
+        for (QueryResultsRow singleRow : allLogs) {
             logs.add((Log) singleRow.get("$allLogs"));
         }
         return logs;
@@ -93,8 +86,8 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<Alarm> getAlarms() {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = this.session.getQueryResults( "fetchAllAlarms" );
-        for ( QueryResultsRow singleRow : allAlarms ) {
+        QueryResults allAlarms = this.session.getQueryResults("fetchAllAlarms");
+        for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$allAlarms"));
         }
         return alarms;
@@ -103,8 +96,8 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<Alarm> getAlarmForRule(String ruleName) {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = this.session.getQueryResults( "fetchAlarmsForRuleName", ruleName);
-        for ( QueryResultsRow singleRow : allAlarms ) {
+        QueryResults allAlarms = this.session.getQueryResults("fetchAlarmsForRuleName", ruleName);
+        for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$alarms"));
         }
         return alarms;

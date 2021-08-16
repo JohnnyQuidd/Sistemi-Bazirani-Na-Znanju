@@ -8,8 +8,12 @@ import java.util.Map;
 
 public interface RuleService {
     void insertRule(Map<String, Object> ruleData);
+
     void insertLog(Log log);
+
     List<Log> getLogs();
+
     List<Alarm> getAlarms();
+
     List<Alarm> getAlarmForRule(String ruleName);
 }

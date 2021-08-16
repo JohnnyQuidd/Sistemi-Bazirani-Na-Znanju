@@ -47,7 +47,7 @@ public class LogServiceImpl implements LogService {
         this.ruleService = ruleService;
     }
 
-    public void createLog(@Valid @RequestBody LogDTO logDTO){
+    public void createLog(@Valid @RequestBody LogDTO logDTO) {
         Log log = createLogFromDTO(logDTO);
         logRepository.save(log);
         ruleService.insertLog(log);
@@ -55,7 +55,7 @@ public class LogServiceImpl implements LogService {
 
     public Log createLogFromDTO(LogDTO logDTO) {
         LocalDateTime timestamp = LocalDateTime.now();
-        if(logDTO.getTimestamp() != null) {
+        if (logDTO.getTimestamp() != null) {
             timestamp = logDTO.getTimestamp();
         }
 
@@ -97,17 +97,17 @@ public class LogServiceImpl implements LogService {
     }
 
     private OperatingSystem extractOperatingSystem(String name) {
-            return osRepository.findByName(name)
-                    .orElseGet(() -> {
-                        OperatingSystem os = new OperatingSystem(name);
-                        osRepository.save(os);
-                        return os;
-                    });
+        return osRepository.findByName(name)
+                .orElseGet(() -> {
+                    OperatingSystem os = new OperatingSystem(name);
+                    osRepository.save(os);
+                    return os;
+                });
     }
 
     private User extractUser(String username) {
-            return userRepository.findByUsername(username)
-                    .orElseThrow(() -> new ResourceNotFoundException("User with provided username cannot be fetched"));
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User with provided username cannot be fetched"));
     }
 
     public List<Log> getAllLogs() {

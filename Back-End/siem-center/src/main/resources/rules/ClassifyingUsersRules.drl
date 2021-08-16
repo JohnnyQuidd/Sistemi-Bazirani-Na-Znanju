@@ -65,3 +65,13 @@ rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
        userRepository.save($user);
        logger.info("#17 User " + $user.getUsername() + " has gotten MODERATE risk category" );
 end
+
+rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
+    when
+        $user: User() from userRepository.findAllAdmins()
+        Alarm(relatedUsers contains $user) over window:time(30d)
+    then
+       $user.setRiskCategory(RiskCategory.HIGH);
+       userRepository.save($user);
+       logger.info("#18 Admin " + $user.getUsername() + " has gotten HIGH risk category" );
+end

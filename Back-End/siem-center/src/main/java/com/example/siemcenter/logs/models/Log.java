@@ -5,7 +5,10 @@ import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.common.models.OperatingSystem;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.users.models.User;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 

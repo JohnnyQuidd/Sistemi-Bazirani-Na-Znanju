@@ -11,5 +11,6 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface OperatingSystemRepository extends JpaRepository<OperatingSystem, Long> {
     boolean existsByName(String name);
+
     Optional<OperatingSystem> findByName(String name);
 }

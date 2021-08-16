@@ -25,7 +25,7 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable("id") long id) {
         User user = userService.findUserById(id);
 
-        if(user != null) {
+        if (user != null) {
             return ResponseEntity.ok(user);
         }
 
@@ -52,7 +52,7 @@ public class UserController {
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO loginDTO) {
         String role = userService.loginUser(loginDTO);
 
-        if(role == null) {
+        if (role == null) {
             return ResponseEntity.status(403).build();
         }
 

@@ -19,8 +19,8 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
-    private UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
 
 
     @Autowired
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void registerANewUser(UserDTO userDTO) {
-        if(userRepository.existsByUsername(userDTO.getUsername())) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("User with provided username already exists!");
         }
 
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = userRepository.findByUsername(loginDTO.getUsername())
                 .orElse(null);
 
-        if(user != null && BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
+        if (user != null && BCrypt.checkpw(loginDTO.getPassword(), user.getPassword())) {
             return user.getRole().toString();
         }
 
