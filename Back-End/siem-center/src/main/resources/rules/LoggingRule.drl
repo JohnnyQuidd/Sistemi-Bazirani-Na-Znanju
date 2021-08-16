@@ -20,7 +20,6 @@ global DeviceRepository deviceRepository;
 global AlarmService alarmService;
 global UserRepository userRepository;
 
-
 rule "#1 Failed to login from a device that has already failed to log in" salience 5
     when
         $device: Device() from deviceRepository.findAll()
@@ -37,14 +36,14 @@ rule "#1 Failed to login from a device that has already failed to log in" salien
         $newAlarm.setTimestamp(LocalDateTime.now());
 
         for(Log log: $logs) {
-            $newAlarm.getRelatedLogs.add(log);
-            $newAlarm.getRelatedUsers.add(log.getUser());
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
         }
 
         alarmService.insertNewAlarm($newAlarm);
 
         insert($newAlarm);
-        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
+        logger.info("Failed to login from a device that has already failed to log in");
 end
 
 // TODO: Pick up only those Logs that haven't triggered an alarm for rule #2 already, not every log
@@ -63,14 +62,14 @@ rule "#2 Failed to login with a same username multiple times" salience 5
         $newAlarm.setTimestamp(LocalDateTime.now());
 
         for(Log log: $logs) {
-            $newAlarm.getRelatedLogs.add(log);
-            $newAlarm.getRelatedUsers.add(log.getUser());
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
         }
 
         alarmService.insertNewAlarm($newAlarm);
 
         insert($newAlarm);
-        logger.info("New alarm inserted into working memory with a message " + $newAlarm.getMessage());
+        logger.info("Failed to login with a same username multiple times");
 end
 
 rule "#3 Log with type ERROR occurred" salience 5
@@ -82,8 +81,8 @@ rule "#3 Log with type ERROR occurred" salience 5
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
         $newAlarm.setRuleTriggered("#3 Log with type ERROR occurred");
         $newAlarm.setTimestamp(LocalDateTime.now());
-        $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedUsers.add($log.getUser());
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
@@ -100,8 +99,8 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
         $newAlarm.setRuleTriggered("#4 An attempt to log in an account that was inactive for 90 days or more");
         $newAlarm.setTimestamp(LocalDateTime.now());
-        $newAlarm.getRelatedLogs.add($log);
-        $newAlarm.getRelatedUsers.add($log.getUser());
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
@@ -125,8 +124,8 @@ rule "#5 15 or more failed attempts to login from a same device over a course of
         $newAlarm.setTimestamp(LocalDateTime.now());
 
         for(Log log: $logs) {
-            $newAlarm.getRelatedLogs.add(log);
-            $newAlarm.getRelatedUsers.add(log.getUser());
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
         }
 
         alarmService.insertNewAlarm($newAlarm);
@@ -158,9 +157,9 @@ rule "#6 Successful logins from same user from different devices in a time span 
         $newAlarm.setRuleTriggered("#6 Successful logins from same user from different devices in a time span of 10 seconds or less");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        $newAlarm.getRelatedLogs.add($log1);
-        $newAlarm.getRelatedLogs.add($log2);
-        $newAlarm.getRelatedUsers.add($user);
+        $newAlarm.getRelatedLogs().add($log1);
+        $newAlarm.getRelatedLogs().add($log2);
+        $newAlarm.getRelatedUsers().add($user);
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
@@ -181,11 +180,51 @@ rule "#7 Threat registered by antivirus is not dealt with in an hour from time o
         $newAlarm.setRuleTriggered("#7 Threat registered by antivirus is not dealt with in an hour from time of detection");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        $newAlarm.getRelatedLogs.add($log1);
-        $newAlarm.getRelatedUsers.add($log1.getUser());
+        $newAlarm.getRelatedLogs().add($log1);
+        $newAlarm.getRelatedUsers().add($log1.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
         logger.info("Threat registered by antivirus is not dealt with in an hour from time of detection");
 end
 
+// If in last 90 seconds were 5 or more failed logins from same device to different accounts
+// TODO: set timestamp to - 90seconds
+rule "#8 Successful login to a system followed by a user information changed" salience 5
+    when
+        $log1: Log(message contains "User data changed",
+                   logType == LogType.INFORMATION
+        )
+        $log2: Log(this != $log1,
+                   device.getIpAddress() == $log1.getDevice().getIpAddress(),
+                   logType == LogType.INFORMATION,
+                   message contains "login"
+        )
+        $logs: List(size >= 5) from collect (
+            Log(this != $log1,
+                this != $log2,
+                message contains "login",
+                logType == LogType.ERROR,
+                device.getIpAddress() == $log1.getDevice().getIpAddress(),
+                user.getUsername() != $log1.getUser().getUsername(),
+                timestamp.isAfter($log1.getTimestamp().minusDays(1))
+            )
+        )
+    then
+        Alarm $newAlarm = new Alarm();
+        $newAlarm.setMessage("Successful login to a system followed by a user information changed");
+        $newAlarm.setFactStatus(FactStatus.ACTIVE);
+        $newAlarm.setRuleTriggered("#8 Successful login to a system followed by a user information changed");
+        $newAlarm.setTimestamp(LocalDateTime.now());
+
+        $newAlarm.getRelatedUsers().add($log1.getUser());
+
+        for(Log log: $logs) {
+            $newAlarm.getRelatedLogs().add(log);
+            $newAlarm.getRelatedUsers().add(log.getUser());
+        }
+
+        alarmService.insertNewAlarm($newAlarm);
+        insert($newAlarm);
+        logger.info("Successful login to a system followed by a user information changed");
+end
