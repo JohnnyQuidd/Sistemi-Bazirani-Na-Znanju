@@ -8,11 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.kie.api.definition.type.Role;
-import org.kie.api.definition.type.Timestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Role(Role.Type.EVENT)
-@Timestamp("_timestamp")
 public class Alarm {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +44,4 @@ public class Alarm {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> relatedUsers = new LinkedList<>();
-
-    private Date _timestamp;
 }
