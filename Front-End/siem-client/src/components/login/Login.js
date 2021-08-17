@@ -8,6 +8,7 @@ function Login() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loginError, setLoginError] = useState(false);
     const history = useHistory();
 
     const submitData = () => {
@@ -16,11 +17,18 @@ function Login() {
             url: API + 'users/login',
             data: {username, password},
         }).then(response => {
-            localStorage.setItem("role", "ADMIN");   
-            history.push("/admin");
+            if(response.data === "ADMIN") {
+                localStorage.setItem("role", "ADMIN");   
+                history.push("/admin");
+            }
+            else {
+                setLoginError(true);
+            }
+
         }).catch(err => {
             console.log('An error occurred');
             console.log(err);
+            setLoginError(true);
         });
     }
 
@@ -40,6 +48,12 @@ function Login() {
                 value={password}
                 onChange={e => setPassword(e.target.value)} />
             </div>
+            {
+                loginError &&
+                <div className="error-section">
+                    <p> Invalid credentials! </p>
+                </div>
+            }
             <div id="login-button-wrapper">
                 <button id="login" onClick={submitData}> Login </button>
             </div>

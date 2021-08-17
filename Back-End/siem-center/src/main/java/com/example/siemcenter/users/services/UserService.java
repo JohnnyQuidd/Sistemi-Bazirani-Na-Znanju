@@ -2,6 +2,7 @@ package com.example.siemcenter.users.services;
 
 import com.example.siemcenter.users.dtos.UserDTO;
 import com.example.siemcenter.users.dtos.UserLoginDTO;
+import com.example.siemcenter.users.dtos.UserUpdateDTO;
 import com.example.siemcenter.users.models.User;
 
 import java.util.List;
@@ -21,5 +22,5 @@ public interface UserService {
 
     List<User> getAllUsers();
 
-    void updateUser(UserDTO userDTO);
+    void updateUser(UserUpdateDTO userDTO);
 }

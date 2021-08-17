@@ -2,6 +2,7 @@ package com.example.siemcenter.users.services.implementation;
 
 import com.example.siemcenter.users.dtos.UserDTO;
 import com.example.siemcenter.users.dtos.UserLoginDTO;
+import com.example.siemcenter.users.dtos.UserUpdateDTO;
 import com.example.siemcenter.users.models.RiskCategory;
 import com.example.siemcenter.users.models.Role;
 import com.example.siemcenter.users.models.User;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,6 +42,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .password(passwordEncoder.encode(userDTO.getPassword()))
                 .riskCategory(RiskCategory.LOW)
                 .role(Role.USER)
+                .lastTimeUserWasActive(LocalDateTime.now())
                 .build();
         saveUser(user);
     }
@@ -67,7 +70,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public void updateUser(UserDTO userDTO) {
+    public void updateUser(UserUpdateDTO userDTO) {
         User user = userRepository.findByUsername(userDTO.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
 

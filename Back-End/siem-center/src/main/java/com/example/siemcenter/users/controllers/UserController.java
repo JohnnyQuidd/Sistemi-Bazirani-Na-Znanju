@@ -2,6 +2,7 @@ package com.example.siemcenter.users.controllers;
 
 import com.example.siemcenter.users.dtos.UserDTO;
 import com.example.siemcenter.users.dtos.UserLoginDTO;
+import com.example.siemcenter.users.dtos.UserUpdateDTO;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,8 @@ public class UserController {
     }
 
     @PutMapping
-    public void updateUser(@Valid @RequestBody UserDTO userDTO) {
-        userService.updateUser(userDTO);
+    public void updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        userService.updateUser(userUpdateDTO);
     }
 
     @PostMapping(path = "/register")
