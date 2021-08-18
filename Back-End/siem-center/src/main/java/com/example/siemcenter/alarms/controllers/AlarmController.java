@@ -24,4 +24,5 @@ public class AlarmController {
     public ResponseEntity<List<Alarm>> getAllAlarms() {
         return ResponseEntity.ok(alarmService.findAllAlarms());
     }
+
 }

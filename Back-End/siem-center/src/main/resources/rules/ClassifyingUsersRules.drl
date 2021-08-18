@@ -20,9 +20,11 @@ global DeviceRepository deviceRepository;
 global AlarmService alarmService;
 global UserRepository userRepository;
 
+
 rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 5
     when
-        $user: User() from userRepository.findAllUsers();
+        $log: Log($username: user.getUsername())
+        $user: User(username == $username) from userRepository.findAllUsers();
         not(
             Alarm(relatedUsers contains $user )
             over window:time(90d)

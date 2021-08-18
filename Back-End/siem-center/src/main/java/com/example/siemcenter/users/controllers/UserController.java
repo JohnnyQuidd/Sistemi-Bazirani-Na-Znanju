@@ -1,5 +1,6 @@
 package com.example.siemcenter.users.controllers;
 
+import com.example.siemcenter.rules.services.RuleService;
 import com.example.siemcenter.users.dtos.UserDTO;
 import com.example.siemcenter.users.dtos.UserLoginDTO;
 import com.example.siemcenter.users.dtos.UserUpdateDTO;
@@ -16,10 +17,13 @@ import java.util.List;
 @RequestMapping(path = "/users")
 public class UserController {
     private UserService userService;
+    private RuleService ruleService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService,
+                          RuleService ruleService) {
         this.userService = userService;
+        this.ruleService = ruleService;
     }
 
     @GetMapping(path = "/{id}")
@@ -52,11 +56,12 @@ public class UserController {
     @PostMapping(path = "/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO loginDTO) {
         String role = userService.loginUser(loginDTO);
+        return role == null ?  ResponseEntity.status(403).build() : ResponseEntity.ok(role);
+    }
 
-        if (role == null) {
-            return ResponseEntity.status(403).build();
-        }
-
-        return ResponseEntity.ok(role);
+    @GetMapping(path = "/alarms")
+    public ResponseEntity<?> getUsersWithSixOrMoreTriggeredAlarms() {
+        List<User> usersForSixOrMoreAlarms = ruleService.getUsersForSixOrMoreAlarms();
+        return ResponseEntity.ok(usersForSixOrMoreAlarms);
     }
 }

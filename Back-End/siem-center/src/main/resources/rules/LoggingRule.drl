@@ -49,6 +49,7 @@ end
 
 // TODO: Pick up only those Logs that haven't triggered an alarm for rule #2 already, not every log
 rule "#2 Failed to login with a same username multiple times" salience 5
+    no-loop
     when
         $currentLog: Log()
         $logs: List(size > 1) from collect(

@@ -1,0 +1,45 @@
+dialect "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+import com.example.siemcenter.users.models.User;
+import com.example.siemcenter.users.drools.UserTrait;
+import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.repositories.UserRepository;
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmService alarmService;
+global UserRepository userRepository;
+
+declare trait AlarmUser
+end
+
+// TODO: BUG -> don($user, AlarmUserTrait.class) throws java.lang.AbstractMethodError: Receiver class com.example.siemcenter.users.models.UserWrapper does not define or inherit an implementation of the resolved method abstract _setTraitMap(Ljava/util/Map;)V of interface org.drools.core.factmodel.traits.TraitableBean.
+// TODO: On at least 3 different parts of Information System
+rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months" salience 1
+    when
+        $user: User() from userRepository.findAll()
+        Number(intValue >= 6) from accumulate (
+            $alarm: Alarm(relatedUsers contains $user)
+            over window:time(180d), count($alarm)
+        )
+        not ( UserTrait(username == $user.getUsername()) )
+    then
+        logger.info("#23 user inserted in WM: " + $user.toString());
+        UserTrait $trait = new UserTrait($user);
+        insert($trait);
+end
+
+query fetchAllUsersThatTriggeredSixOrMoreAlarms()
+    $user: UserTrait()
+end

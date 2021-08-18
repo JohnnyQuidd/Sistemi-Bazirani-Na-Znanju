@@ -5,6 +5,8 @@ import com.example.siemcenter.alarms.services.AlarmService;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.repositories.RuleRepository;
+import com.example.siemcenter.users.drools.UserTrait;
+import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import org.drools.core.ClockType;
 import org.kie.api.KieServices;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class RuleServiceImpl implements RuleService {
@@ -86,7 +89,7 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<Alarm> getAlarms() {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = this.session.getQueryResults("fetchAllAlarms");
+        QueryResults allAlarms = session.getQueryResults("fetchAllAlarms");
         for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$allAlarms"));
         }
@@ -96,10 +99,34 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<Alarm> getAlarmForRule(String ruleName) {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = this.session.getQueryResults("fetchAlarmsForRuleName", ruleName);
+        QueryResults allAlarms = session.getQueryResults("fetchAlarmsForRuleName", ruleName);
         for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$alarms"));
         }
         return alarms;
+    }
+
+    @Override
+    public List<User> getUsersForSixOrMoreAlarms() {
+        List<UserTrait> users = new LinkedList<>();
+        QueryResults userResults = session.getQueryResults("fetchAllUsersThatTriggeredSixOrMoreAlarms");
+        for(QueryResultsRow singleRow : userResults) {
+            users.add((UserTrait) singleRow.get("$user"));
+        }
+
+        return fromTraitToModel(users);
+    }
+
+    private List<User> fromTraitToModel(List<UserTrait> userTraits) {
+        return userTraits.stream().map(trait ->
+                User.builder()
+                        .id(trait.getId())
+                        .username(trait.getUsername())
+                        .password(trait.getPassword())
+                        .lastTimeUserWasActive(trait.getLastTimeUserWasActive())
+                        .riskCategory(trait.getRiskCategory())
+                        .role(trait.getRole())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
