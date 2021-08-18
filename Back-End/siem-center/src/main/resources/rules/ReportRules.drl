@@ -24,7 +24,7 @@ global UserRepository userRepository;
 declare trait AlarmUser
 end
 
-// TODO: BUG -> don($user, AlarmUserTrait.class) throws java.lang.AbstractMethodError: Receiver class com.example.siemcenter.users.models.UserWrapper does not define or inherit an implementation of the resolved method abstract _setTraitMap(Ljava/util/Map;)V of interface org.drools.core.factmodel.traits.TraitableBean.
+
 // TODO: On at least 3 different parts of Information System
 rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months" salience 1
     when

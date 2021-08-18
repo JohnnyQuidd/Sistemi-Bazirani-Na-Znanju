@@ -24,9 +24,13 @@ th {
     text-align: center;
 }
 
-.risk-category {
-    width: 100%;
-    padding: 0.3rem 0rem;
+.logs-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: orange;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    font-style: italic;
 }
 
 
@@ -45,8 +49,4 @@ th {
         font-size: 1.4rem;
     }
 
-    .risk-category {
-        width: 50%;
-        padding: 0.3rem 0.5rem;
-    }
 }

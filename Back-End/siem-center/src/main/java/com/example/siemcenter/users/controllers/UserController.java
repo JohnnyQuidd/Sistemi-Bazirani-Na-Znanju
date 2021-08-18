@@ -64,4 +64,9 @@ public class UserController {
         List<User> usersForSixOrMoreAlarms = ruleService.getUsersForSixOrMoreAlarms();
         return ResponseEntity.ok(usersForSixOrMoreAlarms);
     }
+
+    @GetMapping(path = "/failedLogin")
+    public ResponseEntity<?> getUsersThatFailedToLogInFromNumberOfDevices(@RequestParam("deviceNum") int deviceNum) {
+        return ResponseEntity.ok(deviceNum);
+    }
 }
