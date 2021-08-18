@@ -28,6 +28,7 @@ end
 // TODO: On at least 3 different parts of Information System
 rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months" salience 1
     when
+        Alarm()
         $user: User() from userRepository.findAll()
         Number(intValue >= 6) from accumulate (
             $alarm: Alarm(relatedUsers contains $user)

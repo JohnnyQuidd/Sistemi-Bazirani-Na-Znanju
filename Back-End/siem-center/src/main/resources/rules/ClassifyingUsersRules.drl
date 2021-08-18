@@ -37,7 +37,7 @@ end
 
 rule "#16 Moderate risk category if user has triggered an antivirus alarm in past 6 months" salience 5
     when
-        $user: User() from userRepository.findAllUsers();
+        $log: Log($user: user)
         $alarm: Alarm(relatedUsers contains $user,
                 message.toLowerCase() contains "antivirus"
                 || message.toLowerCase() contains "threat detected"
@@ -51,7 +51,9 @@ end
 
 rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
     when
-        $user: User() from userRepository.findAllUsers()
+        Log($user: user, message.toLowerCase() contains "login"
+                  || message.toLowerCase() contains "log in"
+                  || message.toLowerCase() contains "log-in")
         Number( intValue >= 15 ) from accumulate (
             $log: Log(message.toLowerCase() contains "login"
                       || message.toLowerCase() contains "log in"
@@ -68,9 +70,11 @@ rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
        logger.info("#17 User " + $user.getUsername() + " has gotten a MODERATE risk category" );
 end
 
+// TODO: Check if condition makes sense
 rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
     when
-        $user: User() from userRepository.findAllAdmins()
+        $log: Log($logUser: user)
+        $user: User(username == $logUser.getUsername()) from userRepository.findAllAdmins()
         Alarm(relatedUsers contains $user) over window:time(30d)
     then
        $user.setRiskCategory(RiskCategory.HIGH);
@@ -120,7 +124,6 @@ rule "#20 Extreme risk category if an account has login attempt from malicious d
         logger.info("#20 User " + $user.getUsername() + " has gotten an EXTREME risk category" );
 end
 
-// TODO: Check if relatedUsers contain only those users that triggered an alarm
 rule "#21 Extreme risk category for user has been associated with antivirus in last 6 months" salience 5
     when
         $user: User() from userRepository.findAll()

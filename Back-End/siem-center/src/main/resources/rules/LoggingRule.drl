@@ -31,30 +31,37 @@ rule "#1 Failed to login from a device that has already failed to log in" salien
         )
     then
         Alarm $newAlarm = new Alarm();
-        $newAlarm.setMessage("Multiple failed attempts to log from same device with IP");
+        $newAlarm.setMessage("#1 Failed to login from a device that has already failed to log in");
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
         $newAlarm.setRuleTriggered("#1 Failed to login from a device that has already failed to log in");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        Log $log = $logs.get(0);
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
+
 
         alarmService.insertNewAlarm($newAlarm);
 
         insert($newAlarm);
-        logger.info("Failed to login from a device that has already failed to log in");
+        logger.info("#1 Failed to login from a device that has already failed to log in");
 end
 
 // TODO: Pick up only those Logs that haven't triggered an alarm for rule #2 already, not every log
 rule "#2 Failed to login with a same username multiple times" salience 5
-    no-loop
     when
-        $currentLog: Log()
-        $logs: List(size > 1) from collect(
-            $log: Log(logType==LogType.ERROR,
-                      user.getUsername==$currentLog.getUser().getUsername())
+        $currentLog: Log(logType==LogType.ERROR,
+                        message.toLowerCase() contains "login"
+                        || message.toLowerCase() contains "log in"
+                        || message.toLowerCase() contains "log-in"
+        )
+        Number(intValue > 1) from accumulate (
+            $l: Log(logType==LogType.ERROR,
+                    user == $currentLog.getUser(),
+                    message.toLowerCase() contains "login"
+                    || message.toLowerCase() contains "log in"
+                    || message.toLowerCase() contains "log-in")
+                , count($l)
         )
     then
         Alarm $newAlarm = new Alarm();
@@ -63,15 +70,12 @@ rule "#2 Failed to login with a same username multiple times" salience 5
         $newAlarm.setRuleTriggered("#2 Failed to login with a same username multiple times");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        $newAlarm.getRelatedLogs().add($currentLog);
+        $newAlarm.getRelatedUsers().add($currentLog.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
-
         insert($newAlarm);
-        logger.info("Failed to login with a same username multiple times");
+        logger.info("#2 Failed to login with a same username multiple times");
 end
 
 rule "#3 Log with type ERROR occurred" salience 5
@@ -88,7 +92,7 @@ rule "#3 Log with type ERROR occurred" salience 5
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("Log with type ERROR triggered an alarm");
+        logger.info("#3 Log with type ERROR occurred");
 end
 
 rule "#4 An attempt to log in an account that was inactive for 90 days or more" salience 5
@@ -109,7 +113,7 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("User tried to log in an account that was inactive for 90 days or more");
+        logger.info("#4 An attempt to log in an account that was inactive for 90 days or more");
 end
 
 rule "#5 15 or more failed attempts to login from a same device over a course of 5 days" salience 5
@@ -130,14 +134,13 @@ rule "#5 15 or more failed attempts to login from a same device over a course of
         $newAlarm.setRuleTriggered("#5 15 or more failed attempts to login from a same device over a course of 5 days");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        Log $log = $logs.get(0);
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("User failed to login 15 times or more from a same device over the course of 5 days");
+        logger.info("#5 15 or more failed attempts to login from a same device over a course of 5 days");
 end
 
 rule "#6 Successful logins from same user from different devices in a time span of 10 seconds or less" salience 5
@@ -177,13 +180,15 @@ rule "#6 Successful logins from same user from different devices in a time span 
         logger.info("User logged in from different devices in a time span less than 10 seconds");
 end
 
-// TODO: add some additional time so rule doesn't trigger immediately upon log insert
+// TODO: add some additional time so the rule doesn't trigger immediately upon log insertion
 rule "#7 Threat registered by antivirus is not dealt with in an hour from time of detection" salience 5
     when
         $log1: Log(message.toLowerCase() contains "Antivirus detected threat")
         not ( Log(message.toLowerCase() contains "Antivirus eliminated threat",
                             timestamp.isBefore($log1.getTimestamp().plusHours(1))
-                          ))
+                            && timestamp.isAfter($log1.getTimestamp().plusSeconds(5))
+                          )
+            )
     then
         Alarm $newAlarm = new Alarm();
         $newAlarm.setMessage("Threat registered by antivirus is not dealt with in an hour from time of detection");
@@ -196,7 +201,7 @@ rule "#7 Threat registered by antivirus is not dealt with in an hour from time o
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("Threat registered by antivirus is not dealt with in an hour from time of detection");
+        logger.info("#7 Threat registered by antivirus is not dealt with in an hour from time of detection");
 end
 
 // If in last 90 seconds were 5 or more failed logins from same device to different accounts
@@ -231,21 +236,21 @@ rule "#8 Successful login to a system followed by a user information changed" sa
         $newAlarm.setRuleTriggered("#8 Successful login to a system followed by a user information changed");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        $newAlarm.getRelatedUsers().add($log1.getUser());
-
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        Log $log = $logs.get(0);
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("Successful login to a system followed by a user information changed");
+        logger.info("#8 Successful login to a system followed by a user information changed");
 end
 
 rule "#9 Over 10 days 7 or more threats detected from the same device" salience 5
     when
-        $log1: Log($ipAddress: device.getIpAddress())
+        $log1: Log($ipAddress: device.getIpAddress(),
+                    logType == LogType.ERROR
+                    || logType == LogType.WARNING
+        )
         $logs: List(size >= 10) from collect (
             $log: Log(this != $log1,
                       device.getIpAddress() == $ipAddress,
@@ -265,18 +270,17 @@ rule "#9 Over 10 days 7 or more threats detected from the same device" salience 
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.setIpAddress($ipAddress);
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        Log $log = $logs.get(0);
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         alarmService.insertNewAlarm($newAlarm);
         insert($newAlarm);
-        logger.info("Over 10 days 7 or more threats detected from the same device");
+        logger.info("#9 Over 10 days 7 or more threats detected from the same device");
 end
 
 
-rule "#10 Login attempt from malicious device, regardless of type" salience 5
+rule "#10 Login attempt from malicious device, regardless being successful or not" salience 5
     when
         $log: Log(message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
@@ -285,15 +289,15 @@ rule "#10 Login attempt from malicious device, regardless of type" salience 5
         $device: Device(malicious == true) from deviceRepository.findByIpAddress($ip).orElse(null)
     then
         Alarm $newAlarm = new Alarm();
-        $newAlarm.setMessage("Login attempt from malicious device, regardless of type");
+        $newAlarm.setMessage("Login attempt from malicious device, regardless being successful or not");
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
-        $newAlarm.setRuleTriggered("#10 Login attempt from malicious device, regardless of type");
+        $newAlarm.setRuleTriggered("#10 Login attempt from malicious device, regardless being successful or not");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
         insert($newAlarm);
-        logger.info("Login attempt from malicious device, regardless of type");
+        logger.info("#10 Login attempt from malicious device, regardless being successful or not");
 end
 
 rule "#11 Log detected from malicious device" salience 5
