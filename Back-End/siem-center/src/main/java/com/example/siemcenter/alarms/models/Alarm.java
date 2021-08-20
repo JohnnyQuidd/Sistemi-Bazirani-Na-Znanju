@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.kie.api.definition.type.Role;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Role(Role.Type.EVENT)
 public class Alarm {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +29,6 @@ public class Alarm {
     private String ruleTriggered;
     private String ipAddress;
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "alarm_log",
             joinColumns = @JoinColumn(name = "alarm_id"),
@@ -35,7 +36,6 @@ public class Alarm {
     )
     private List<Log> relatedLogs = new LinkedList<>();
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "alarm_user",
             joinColumns = @JoinColumn(name = "alarm_id"),

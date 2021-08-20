@@ -1,0 +1,52 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 1.1rem;
+    color: black;
+  }
+  
+th, td {
+    text-align: left;
+    padding: 0.5rem;
+    margin-left: 1rem;
+}
+
+tr:nth-child(even){background-color: #eee}
+tr:nth-child(odd){background-color: rgb(179, 177, 177);}
+
+th {
+    background-color: rgb(34, 40, 49);
+    color: white;
+}
+
+.table-div {
+    padding: 1rem;
+    text-align: center;
+}
+
+.risk-category {
+    width: 100%;
+    padding: 0.3rem 0rem;
+}
+
+
+@media(min-width: 700px) {
+    table {
+        width: 80%;
+        margin-left: 10%;
+        margin-top: 3rem;
+    }
+    .table-div {
+        padding-left: 20%;
+        padding-right: 20%;
+    }
+
+    table {
+        font-size: 1.4rem;
+    }
+
+    .risk-category {
+        width: 50%;
+        padding: 0.3rem 0.5rem;
+    }
+}

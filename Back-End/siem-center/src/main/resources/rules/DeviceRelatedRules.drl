@@ -1,0 +1,36 @@
+dialect "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+
+rule "#22 Malicious device if more than 30 failed login attempts in 24 hours" salience 5
+    when
+        Log(message.toLowerCase() contains "login"
+                   || message.toLowerCase() contains "log in"
+                   || message.toLowerCase() contains "log-in",
+                   logType == LogType.ERROR
+                )
+        $device: Device() from deviceRepository.findAll()
+        Number(intValue >= 30) from accumulate (
+            $log: Log(message.toLowerCase() contains "login"
+                     || message.toLowerCase() contains "log in"
+                     || message.toLowerCase() contains "log-in",
+                     device == $device,
+                     logType == LogType.ERROR
+            )
+            over window:time(24h), count($log)
+        )
+    then
+        $device.setMalicious(true);
+        deviceRepository.save($device);
+        logger.info("#22 Malicious device if more than 30 failed login attempts in 24 hours");
+end

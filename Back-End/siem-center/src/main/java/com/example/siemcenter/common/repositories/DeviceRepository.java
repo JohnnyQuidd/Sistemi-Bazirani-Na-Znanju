@@ -12,6 +12,8 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findAll();
+
     Optional<Device> findByIpAddress(String ipAddress);
+
     boolean existsByIpAddress(String ipAddress);
 }

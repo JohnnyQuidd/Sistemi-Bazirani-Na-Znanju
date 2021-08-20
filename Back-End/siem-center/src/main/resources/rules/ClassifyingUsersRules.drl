@@ -1,0 +1,152 @@
+dialect "mvel"
+
+import java.util.List;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.logs.models.LogType;
+import com.example.siemcenter.users.models.User;
+import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.repositories.UserRepository;
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmService alarmService;
+global UserRepository userRepository;
+
+
+rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 5
+    when
+        $log: Log($username: user.getUsername())
+        $user: User(username == $username) from userRepository.findAllUsers();
+        not(
+            Alarm(relatedUsers contains $user )
+            over window:time(90d)
+        )
+    then
+       $user.setRiskCategory(RiskCategory.LOW);
+       userRepository.save($user);
+       logger.info("#15 User " + $user.getUsername() + " has gotten a LOW risk category" );
+end
+
+rule "#16 Moderate risk category if user has triggered an antivirus alarm in past 6 months" salience 5
+    when
+        $log: Log($user: user)
+        $alarm: Alarm(relatedUsers contains $user,
+                message.toLowerCase() contains "antivirus"
+                || message.toLowerCase() contains "threat detected"
+        )
+        over window:time(180d)
+    then
+       $user.setRiskCategory(RiskCategory.MODERATE);
+       userRepository.save($user);
+       logger.info("#16 User " + $user.getUsername() + " has gotten a MODERATE risk category" );
+end
+
+rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
+    when
+        Log($user: user, message.toLowerCase() contains "login"
+                  || message.toLowerCase() contains "log in"
+                  || message.toLowerCase() contains "log-in")
+        Number( intValue >= 15 ) from accumulate (
+            $log: Log(message.toLowerCase() contains "login"
+                      || message.toLowerCase() contains "log in"
+                      || message.toLowerCase() contains "log-in",
+                      user == $user,
+                      logType == LogType.ERROR
+                      || logType == LogType.WARNING
+            )
+            over window:time(90d), count($log)
+        )
+    then
+       $user.setRiskCategory(RiskCategory.MODERATE);
+       userRepository.save($user);
+       logger.info("#17 User " + $user.getUsername() + " has gotten a MODERATE risk category" );
+end
+
+// TODO: Check if condition makes sense
+rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
+    when
+        $log: Log($logUser: user)
+        $user: User(username == $logUser.getUsername()) from userRepository.findAllAdmins()
+        Alarm(relatedUsers contains $user) over window:time(30d)
+    then
+       $user.setRiskCategory(RiskCategory.HIGH);
+       userRepository.save($user);
+       logger.info("#18 Admin " + $user.getUsername() + " has gotten a HIGH risk category" );
+end
+
+rule "#19 High risk if admin failed 2 times to log in following by successful login before or after his shift" salience 5
+    when
+        $admin: User() from userRepository.findAllAdmins()
+        $scflLog: Log(user == $admin,
+                   message.toLowerCase() contains "login"
+                   || message.toLowerCase() contains "log in"
+                   || message.toLowerCase() contains "log-in",
+                   logType != LogType.ERROR,
+                   timestamp.getHour() < 9
+                   || timestamp.getHour() > 17
+        )
+        Number(intValue >= 2) from accumulate (
+            $log: Log(this != $scflLog,
+                     user == $admin,
+                     message.toLowerCase() contains "login"
+                     || message.toLowerCase() contains "log in"
+                     || message.toLowerCase() contains "log-in",
+                     logType == LogType.ERROR
+            ),
+            count($log)
+        )
+    then
+       $admin.setRiskCategory(RiskCategory.HIGH);
+       userRepository.save($admin);
+       logger.info("#19 Admin " + $admin.getUsername() + " has gotten a HIGH risk category" );
+end
+
+rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 5
+    when
+        $device: Device(malicious == true) from deviceRepository.findAll()
+        $log: Log($user: user,
+                  device == $device,
+                  message.toLowerCase() contains "login"
+                  || message.toLowerCase() contains "log in"
+                  || message.toLowerCase() contains "log-in"
+        )
+    then
+        $user.setRiskCategory(RiskCategory.EXTREME);
+        userRepository.save($user);
+        logger.info("#20 User " + $user.getUsername() + " has gotten an EXTREME risk category" );
+end
+
+rule "#21 Extreme risk category for user has been associated with antivirus in last 6 months" salience 5
+    when
+        $user: User() from userRepository.findAll()
+        Number(intValue >= 1) from accumulate (
+            $alarm: Alarm(relatedUsers contains $user)
+            over window:time(180d), count($alarm)
+        )
+        $log: Log(message.toLowerCase() contains "login"
+                || message.toLowerCase() contains "log in"
+                || message.toLowerCase() contains "log-in",
+                logType != LogType.ERROR,
+                $lastTimestamp: timestamp
+        )
+        Number(intValue >= 2) from accumulate (
+            $l: Log(message.toLowerCase() contains "login"
+                    || message.toLowerCase() contains "log in"
+                    || message.toLowerCase() contains "log-in",
+                    logType == LogType.ERROR,
+                    timestamp.isBefore($lastTimestamp)
+            ), count($l)
+        )
+    then
+        $user.setRiskCategory(RiskCategory.EXTREME);
+        userRepository.save($user);
+        logger.info("#21 User " + $user.getUsername() + " has gotten an EXTREME risk category" );
+end

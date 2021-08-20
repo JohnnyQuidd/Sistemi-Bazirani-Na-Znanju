@@ -5,13 +5,17 @@ import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.common.models.OperatingSystem;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.users.models.User;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -24,6 +28,7 @@ public class Log {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private UUID uuid;
     private String message;
     private LocalDateTime timestamp;
     private LogType logType;

@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface AlarmService {
     List<Alarm> findAllAlarms();
+
     void insertNewAlarm(Alarm alarm);
 }

@@ -28,10 +28,12 @@ end
 
 rule "#14 Brute force is detected on a login system" salience 5
     when
+        $log: Log(message.toLowerCase() contains "login"
+                  || message.toLowerCase() contains "log in"
+                  || message.toLowerCase() contains "log-in"
+             )
         $logs: List(size >= 50) from collect (
             Log(message.toLowerCase() contains "login"
-                || message.toLowerCase() contains "register"
-                || message.toLowerCase() contains "sign-in"
                 || message.toLowerCase() contains "log in"
                 || message.toLowerCase() contains "log-in"
             ) over window:time(60s)
@@ -43,10 +45,8 @@ rule "#14 Brute force is detected on a login system" salience 5
         $newAlarm.setRuleTriggered("#14 Brute force is detected on a login system");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         AlarmPriority $alarmPriority = new AlarmPriority(5 * $logs.size(), $newAlarm, "Brute Force login system");
         insert($alarmPriority);
@@ -54,6 +54,12 @@ end
 
 rule "#13 DDoS attack that is targeting payment system triggers payment alarm" salience 5
     when
+        $log: Log(message.toLowerCase() contains "payment"
+                  || message.toLowerCase() contains "pay"
+                  || message.toLowerCase() contains "money"
+                  || message.toLowerCase() contains "cash"
+                  || message.toLowerCase() contains "credit card"
+              )
         $logs: List(size >= 50) from collect (
             Log(message.toLowerCase() contains "payment"
                 || message.toLowerCase() contains "pay"
@@ -69,10 +75,8 @@ rule "#13 DDoS attack that is targeting payment system triggers payment alarm" s
         $newAlarm.setRuleTriggered("#13 DDoS attack that is targeting payment system triggers payment alarm");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         AlarmPriority $alarmPriority = new AlarmPriority(3 * $logs.size(), $newAlarm, "DDoS attack regarding payment system");
         insert($alarmPriority);
@@ -80,6 +84,7 @@ end
 
 rule "#12 DDoS attack is detected if system receives 50 or more request in 60 seconds" salience 5
     when
+        $log: Log()
         $logs: List(size >= 50) from collect(
             Log() over window:time(60s)
         )
@@ -90,17 +95,12 @@ rule "#12 DDoS attack is detected if system receives 50 or more request in 60 se
         $newAlarm.setRuleTriggered("#12 DDoS attack is detected if system receives 50 or more request in 60 seconds");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
-        for(Log log: $logs) {
-            $newAlarm.getRelatedLogs().add(log);
-            $newAlarm.getRelatedUsers().add(log.getUser());
-        }
+        $newAlarm.getRelatedLogs().add($log);
+        $newAlarm.getRelatedUsers().add($log.getUser());
 
         AlarmPriority $alarmPriority = new AlarmPriority(1 * $logs.size(), $newAlarm, "DDoS attack");
         insert($alarmPriority);
 end
-
-
-
 
 
 // Only alarm with highest priority should trigger (1*DDoS || 3*payment || 5*BruteForce)

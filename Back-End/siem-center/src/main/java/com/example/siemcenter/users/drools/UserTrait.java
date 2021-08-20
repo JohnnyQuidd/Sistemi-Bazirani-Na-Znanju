@@ -1,24 +1,30 @@
-package com.example.siemcenter.users.models;
+package com.example.siemcenter.users.drools;
 
+import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.models.Role;
+import com.example.siemcenter.users.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.drools.core.factmodel.traits.Traitable;
+import org.drools.core.factmodel.traits.Trait;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Traitable
-public class User {
+@Trait
+public class UserTrait {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,4 +41,14 @@ public class User {
     private RiskCategory riskCategory;
     @NotNull
     private Role role;
+    private String ruleTriggered;
+
+    public UserTrait(User user) {
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.password = user.getPassword();
+        this.lastTimeUserWasActive = user.getLastTimeUserWasActive();
+        this.riskCategory = user.getRiskCategory();
+        this.role = user.getRole();
+    }
 }

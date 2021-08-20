@@ -12,7 +12,10 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface SoftwareRepository extends JpaRepository<Software, Long> {
     List<Software> findAll();
+
     Optional<Software> findSoftwareById(long id);
+
     Optional<Software> findSoftwareByName(String name);
+
     boolean existsByName(String name);
 }
