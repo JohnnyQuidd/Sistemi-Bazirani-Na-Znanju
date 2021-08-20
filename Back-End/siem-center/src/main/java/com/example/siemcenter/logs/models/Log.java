@@ -15,6 +15,7 @@ import org.kie.api.definition.type.Timestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -27,6 +28,7 @@ public class Log {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private UUID uuid;
     private String message;
     private LocalDateTime timestamp;
     private LogType logType;

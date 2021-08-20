@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class LogServiceImpl implements LogService {
@@ -65,6 +66,7 @@ public class LogServiceImpl implements LogService {
         User user = extractUser(logDTO.getUsername());
 
         return Log.builder()
+                .uuid(UUID.randomUUID())
                 .device(device)
                 .software(software)
                 .os(os)
