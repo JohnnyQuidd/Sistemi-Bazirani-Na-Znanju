@@ -3,9 +3,12 @@ import React, { useState, useEffect } from "react";
 import "../style/Logs.css";
 import LogsTable from "../tables/LogsTable";
 import { API } from "../../common/API";
+import LogModal from "../modals/LogModal";
 
 function Logs() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [logs, setLogs] = useState([]);
+  const [chosenLog, setChosenLog] = useState(null);
 
   useEffect(() => {
     axios({
@@ -35,13 +38,19 @@ function Logs() {
   };
 
   const expandModal = (log) => {
-      console.log(log);
+      setChosenLog(log);
+      setIsModalOpen(true);
+  }
+
+  const changeModalState = (isOpen) => {
+    setIsModalOpen(isOpen);
   }
 
   return (
     <div className="logs-wrapper">
       <h1 className="logs-title"> Recorded logs </h1>
       { logs && <LogsTable logsData={logs} expandModal={expandModal} /> }
+      <LogModal log={chosenLog} isModalOpen={isModalOpen} setIsModalOpen={changeModalState} />
     </div>
   );
 }

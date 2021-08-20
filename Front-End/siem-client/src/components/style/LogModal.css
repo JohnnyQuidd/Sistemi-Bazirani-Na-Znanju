@@ -1,0 +1,15 @@
+.log-wrapper {
+  width: 100%;
+  font-size: 1.2rem;
+  padding-left: 1rem;
+}
+
+@media only screen and (min-width: 720px) {
+  .log-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    width: 90%;
+  }
+}

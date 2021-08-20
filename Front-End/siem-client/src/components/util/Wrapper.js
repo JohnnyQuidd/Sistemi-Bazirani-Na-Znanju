@@ -12,7 +12,7 @@ function Wrapper() {
   }, []);
   return (
     <>
-      { url && <Navbar page={url} /> }
+      { url && url!== 'login' && <Navbar page={url} /> }
       <Router>
         <Switch>
           <Route path="/admin" exact component={Dashboard} />
