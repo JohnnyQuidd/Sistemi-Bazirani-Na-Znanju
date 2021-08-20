@@ -119,6 +119,11 @@ public class RuleServiceImpl implements RuleService {
         return fetchUsersForRule(24);
     }
 
+    @Override
+    public List<User> getUsersForTenAlarmsInTenPastDays() {
+        return fetchUsersForRule(25);
+    }
+
     private List<User> fetchUsersForRule(int ruleNumber) {
         List<UserTrait> users = new LinkedList<>();
         QueryResults userResults = session.getQueryResults("fetchUsersForReportCreation");

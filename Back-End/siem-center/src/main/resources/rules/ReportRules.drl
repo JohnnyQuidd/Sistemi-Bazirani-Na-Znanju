@@ -2,6 +2,7 @@ dialect "mvel"
 
 import java.util.List;
 import java.lang.Integer;
+import java.lang.Long;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 
@@ -22,6 +23,11 @@ global DeviceRepository deviceRepository;
 global AlarmService alarmService;
 global UserRepository userRepository;
 global Integer deviceNumber;
+
+declare ProcessedAlarm
+    ruleTriggered: String
+    id: Long
+end
 
 declare trait AlarmUser
 end
@@ -48,7 +54,6 @@ query fetchUsersForReportCreation()
     $user: UserTrait()
 end
 
-// TODO: N different devices within 12 hours
 rule "#24 Failed attempts to login from N different devices in a time span of 12 hours" salience 5
     when
         $log: Log(message.toLowerCase() contains "login"
@@ -73,4 +78,23 @@ rule "#24 Failed attempts to login from N different devices in a time span of 12
         UserTrait $trait = new UserTrait($user);
         $trait.setRuleTriggered("#24");
         insert($trait);
+end
+
+// TODO: After some time data in memory can become stale so we'll never check again if user has triggered an alarm in past 10 days
+rule "#25 Users that triggered at least 10 alarms in past 10 days" salience 5
+    when
+        $alarm: Alarm()
+        $user: User() from userRepository.findAllUsers()
+        Number(intValue >= 10) from accumulate (
+            $a: Alarm(relatedUsers contains $user)
+            over window:time(10d), count($a)
+        )
+        not ( ProcessedAlarm(ruleTriggered == "#25", id.equals($alarm.getId()) ) )
+        not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#25") )
+    then
+        logger.info("#25 user inserted in WM: " + $user.toString());
+        UserTrait $trait = new UserTrait($user);
+        $trait.setRuleTriggered("#25");
+        insert($trait);
+        insert(new ProcessedAlarm("#25", $alarm.getId()));
 end

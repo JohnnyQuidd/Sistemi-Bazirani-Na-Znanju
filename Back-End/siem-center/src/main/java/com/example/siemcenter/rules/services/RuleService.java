@@ -21,4 +21,6 @@ public interface RuleService {
     List<User> getUsersForSixOrMoreAlarms();
 
     List<User> usersWithMultipleFailedLogins(int deviceNum);
+
+    List<User> getUsersForTenAlarmsInTenPastDays();
 }

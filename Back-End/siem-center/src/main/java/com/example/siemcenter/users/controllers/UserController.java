@@ -65,6 +65,12 @@ public class UserController {
         return ResponseEntity.ok(usersForSixOrMoreAlarms);
     }
 
+    @GetMapping(path = "/alarms/past10days")
+    public ResponseEntity<?> getUsersThatTriggeredTenAlarmsInTenPastDays() {
+        List<User> userList = ruleService.getUsersForTenAlarmsInTenPastDays();
+        return ResponseEntity.ok(userList);
+    }
+
     @GetMapping(path = "/failedLogin")
     public ResponseEntity<?> getUsersThatFailedToLogInFromNumberOfDevices(@RequestParam("deviceNum") int deviceNum) {
         List<User> userList = ruleService.usersWithMultipleFailedLogins(deviceNum);
