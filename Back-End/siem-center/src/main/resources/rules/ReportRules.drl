@@ -1,6 +1,7 @@
 dialect "mvel"
 
 import java.util.List;
+import java.lang.Integer;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 
@@ -20,6 +21,7 @@ global Logger logger;
 global DeviceRepository deviceRepository;
 global AlarmService alarmService;
 global UserRepository userRepository;
+global Integer deviceNumber;
 
 declare trait AlarmUser
 end
@@ -34,7 +36,7 @@ rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months
             $alarm: Alarm(relatedUsers contains $user)
             over window:time(180d), count($alarm)
         )
-        not ( UserTrait(username == $user.getUsername()) )
+        not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#23") )
     then
         logger.info("#23 user inserted in WM: " + $user.toString());
         UserTrait $trait = new UserTrait($user);
@@ -56,7 +58,7 @@ rule "#24 Failed attempts to login from N different devices in a time span of 12
                 $user: user,
                 $ip: device.getIpAddress()
         )
-        Number(intValue > 1) from accumulate (
+        Number(intValue >= deviceNumber.intValue()) from accumulate (
             $l: Log(message.toLowerCase() contains "login"
                     || message.toLowerCase() contains "log in"
                     || message.toLowerCase() contains "log-in",
@@ -65,6 +67,7 @@ rule "#24 Failed attempts to login from N different devices in a time span of 12
                     logType == LogType.ERROR
             ) over window:time(12h), count($l)
         )
+        not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#24") )
     then
         logger.info("#24 user inserted in WM: " + $user.toString());
         UserTrait $trait = new UserTrait($user);

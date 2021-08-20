@@ -34,6 +34,7 @@ public class RuleServiceImpl implements RuleService {
     private DeviceRepository deviceRepository;
     private AlarmService alarmService;
     private UserRepository userRepository;
+    private static Integer DEVICE_NUMBER = 1;
 
 
     @Autowired
@@ -52,6 +53,7 @@ public class RuleServiceImpl implements RuleService {
         session.setGlobal("deviceRepository", deviceRepository);
         session.setGlobal("alarmService", alarmService);
         session.setGlobal("userRepository", userRepository);
+        session.setGlobal("deviceNumber", DEVICE_NUMBER);
     }
 
     private KieSession setUpSessionForStreamProcessingMode() {
@@ -113,6 +115,7 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<User> usersWithMultipleFailedLogins(int deviceNum) {
+        DEVICE_NUMBER = deviceNum;
         return fetchUsersForRule(24);
     }
 
