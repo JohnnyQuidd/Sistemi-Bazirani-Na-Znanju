@@ -17,7 +17,7 @@ function Logs() {
       setLogs(temp);
     });
   }, []);
-
+  
   const prettifyDateTime = (logs) => {
     for (let i = 0; i < logs.length; i++) {
       let timestamp = Date.parse(logs[i]["timestamp"]);

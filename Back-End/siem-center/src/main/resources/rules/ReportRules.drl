@@ -98,3 +98,9 @@ rule "#25 Users that triggered at least 10 alarms in past 10 days" salience 5
         insert($trait);
         insert(new ProcessedAlarm("#25", $alarm.getId()));
 end
+
+rule "#26 Parts of system that generated five alarms while users with HIGH or EXTREME risk factors worked on them" salience 5
+    when
+        $alarm: Alarm()
+    then
+end
