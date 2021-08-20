@@ -1,0 +1,10 @@
+.alarms-wrapper {
+  align-items: center;
+  color: #eee;
+}
+
+.alarms-title {
+  width: fit-content;
+  margin: 2rem auto;
+  font-size: 2.5rem;
+}

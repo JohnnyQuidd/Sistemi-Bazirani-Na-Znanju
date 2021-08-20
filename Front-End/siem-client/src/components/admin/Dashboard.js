@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { API } from "../../common/API";
-import { useHistory } from "react-router-dom"
+import { useHistory } from "react-router-dom";
 import "../style/Dashboard.css";
 
 import UsersTable from "../tables/UsersTable";
@@ -28,16 +28,18 @@ function Dashboard() {
 
   const updateUser = (user) => {
     axios({
-        method: 'PUT',
-        url: API + 'users',
-        data: user
-    }).then(response => {
-        console.log('User updated successfully');
+      method: "PUT",
+      url: API + "users",
+      data: user,
+    })
+      .then((response) => {
+        console.log("User updated successfully");
         history.push("/admin");
-    }).catch(err => {
-        console.log('User cannot be updated');
+      })
+      .catch((err) => {
+        console.log("User cannot be updated");
         console.log(err);
-    });
+      });
   };
 
   const prettifyDateTime = (users) => {
@@ -50,7 +52,14 @@ function Dashboard() {
         "/" +
         (date.getMonth() + 1) +
         "/" +
-        date.getFullYear();
+        date.getFullYear() +
+        " (" +
+        date.getHours() +
+        ":" +
+        date.getMinutes() +
+        ":" +
+        date.getSeconds() +
+        ")";
     }
 
     return users;

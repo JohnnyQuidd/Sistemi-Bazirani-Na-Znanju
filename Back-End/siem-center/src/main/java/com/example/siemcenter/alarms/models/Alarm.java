@@ -29,7 +29,6 @@ public class Alarm {
     private String ruleTriggered;
     private String ipAddress;
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "alarm_log",
             joinColumns = @JoinColumn(name = "alarm_id"),
@@ -37,7 +36,6 @@ public class Alarm {
     )
     private List<Log> relatedLogs = new LinkedList<>();
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "alarm_user",
             joinColumns = @JoinColumn(name = "alarm_id"),

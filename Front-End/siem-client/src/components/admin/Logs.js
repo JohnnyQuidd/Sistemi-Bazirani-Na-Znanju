@@ -26,12 +26,19 @@ function Logs() {
       let timestamp = Date.parse(logs[i]["timestamp"]);
       let date = new Date(timestamp);
       logs[i]["timestamp"] =
-        date.getDay() +
-        1 +
-        "/" +
-        (date.getMonth() + 1) +
-        "/" +
-        date.getFullYear();
+      date.getDay() +
+      1 +
+      "/" +
+      (date.getMonth() + 1) +
+      "/" +
+      date.getFullYear() +
+      " (" +
+      date.getHours() +
+      ":" +
+      date.getMinutes() +
+      ":" +
+      date.getSeconds()
+      + ")";
     }
 
     return logs;
