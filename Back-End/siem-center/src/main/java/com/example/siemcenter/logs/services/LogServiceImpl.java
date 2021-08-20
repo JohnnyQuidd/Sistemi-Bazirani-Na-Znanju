@@ -9,6 +9,7 @@ import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.common.repositories.OperatingSystemRepository;
 import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.dtos.LogDTO;
+import com.example.siemcenter.logs.dtos.LogSearchDTO;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.rules.services.RuleService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +80,32 @@ public class LogServiceImpl implements LogService {
                 ._timestamp(new Date())
                 .build();
 
+    }
+
+    @Override
+    public List<Log> searchLogs(LogSearchDTO logDTO) {
+        logDTO.setMessage(logDTO.getMessage().trim());
+        List<Log> logList = fetchLogs(logDTO);
+
+        return logList;
+    }
+
+    private List<Log> fetchLogs(LogSearchDTO logDTO) {
+        List<Log> logList = new ArrayList<>();
+
+        if(!logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+            logList = logRepository.findByMessageContains(logDTO.getMessage());
+        }
+
+         else if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+             // perform DRL query
+         }
+
+         else {
+             logList = logRepository.findAll();
+         }
+
+        return logList;
     }
 
     private Device extractDevice(String ipAddress) {

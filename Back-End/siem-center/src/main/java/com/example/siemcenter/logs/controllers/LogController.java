@@ -1,6 +1,7 @@
 package com.example.siemcenter.logs.controllers;
 
 import com.example.siemcenter.logs.dtos.LogDTO;
+import com.example.siemcenter.logs.dtos.LogSearchDTO;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.services.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class LogController {
 
     @PostMapping
     public void insertNewLog(@Valid @RequestBody LogDTO logDTO, HttpServletRequest request) {
-        // TODO: Get ipAddress from request
+        // TODO: Get ipAddress from request in real-world
         // logDTO.setIpAddress(request.getRemoteAddr());
         logsService.createLog(logDTO);
     }
@@ -32,5 +33,11 @@ public class LogController {
     public ResponseEntity<List<Log>> getAllLogs() {
         List<Log> logs = logsService.getAllLogs();
         return ResponseEntity.ok(logs);
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<?> searchLogs(@RequestBody LogSearchDTO logDTO) {
+        List<Log> logList = logsService.searchLogs(logDTO);
+        return ResponseEntity.ok(logList);
     }
 }
