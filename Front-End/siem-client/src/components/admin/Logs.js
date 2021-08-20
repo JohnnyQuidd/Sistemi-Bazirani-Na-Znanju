@@ -27,7 +27,7 @@ function Logs() {
       let timestamp = Date.parse(logs[i]["timestamp"]);
       let date = new Date(timestamp);
       logs[i]["timestamp"] =
-        date.getDay() +
+        date.getDate() +
         1 +
         "/" +
         (date.getMonth() + 1) +
@@ -58,13 +58,16 @@ function Logs() {
     if (data.logType == "Log Type") data.logType = "";
     if (data.factStatus == "Fact Status") data.factStatus = "";
 
+    data.date = data.dateArray;
     axios({
       method: "POST",
       url: API + "logs/search",
       data: data
     })
       .then((response) => {
-        console.log(response);
+        let temp = response.data;
+        temp = prettifyDateTime(temp);
+        setLogs(temp);
       })
       .catch((err) => {
         console.log(err);

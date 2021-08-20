@@ -47,7 +47,7 @@ function Dashboard() {
       let timestamp = Date.parse(users[i]["lastTimeUserWasActive"]);
       let date = new Date(timestamp);
       users[i]["lastTimeUserWasActive"] =
-        date.getDay() +
+        date.getDate() +
         1 +
         "/" +
         (date.getMonth() + 1) +

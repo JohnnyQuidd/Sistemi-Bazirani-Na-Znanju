@@ -16,5 +16,7 @@ public class LogSearchDTO {
     private String factStatus;
     private String logType;
     private boolean regex;
-    private LocalDate[] date;
+    private String date;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

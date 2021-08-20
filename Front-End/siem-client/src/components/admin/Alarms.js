@@ -30,7 +30,7 @@ function Alarms() {
       let timestamp = Date.parse(alarms[i]["timestamp"]);
       let date = new Date(timestamp);
       alarms[i]["timestamp"] =
-      date.getDay() +
+      date.getDate() +
       1 +
       "/" +
       (date.getMonth() + 1) +
