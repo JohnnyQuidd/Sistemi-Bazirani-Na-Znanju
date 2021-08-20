@@ -91,21 +91,14 @@ public class LogServiceImpl implements LogService {
     }
 
     private List<Log> fetchLogs(LogSearchDTO logDTO) {
-        List<Log> logList = new ArrayList<>();
-
         if(!logDTO.isRegex() && !logDTO.getMessage().equals("")) {
-            logList = logRepository.findByMessageContains(logDTO.getMessage());
+            return logRepository.findByMessageContains(logDTO.getMessage());
+        }
+        if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+            return ruleService.fetchLogsByRegex(logDTO.getMessage());
         }
 
-         else if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
-             // perform DRL query
-         }
-
-         else {
-             logList = logRepository.findAll();
-         }
-
-        return logList;
+        return logRepository.findAll();
     }
 
     private Device extractDevice(String ipAddress) {

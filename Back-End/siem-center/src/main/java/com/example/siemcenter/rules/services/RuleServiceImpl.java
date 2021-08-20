@@ -137,6 +137,16 @@ public class RuleServiceImpl implements RuleService {
         return fromTraitToModel(users);
     }
 
+    public List<Log> fetchLogsByRegex(String regex) {
+        List<Log> logList = new LinkedList<>();
+        QueryResults logResults = session.getQueryResults("fetchLogsByRegex", regex);
+        for(QueryResultsRow singleRow : logResults) {
+            logList.add((Log) singleRow.get("$regexLogs"));
+        }
+
+        return logList;
+    }
+
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {
         return userTraits.stream().map(trait ->
                 User.builder()
