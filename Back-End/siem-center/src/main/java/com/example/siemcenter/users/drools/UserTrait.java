@@ -14,6 +14,7 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class UserTrait {
     private RiskCategory riskCategory;
     @NotNull
     private Role role;
+    private String ruleTriggered;
 
     public UserTrait(User user) {
         this.id = user.getId();

@@ -108,10 +108,22 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<User> getUsersForSixOrMoreAlarms() {
+        return fetchUsersForRule(23);
+    }
+
+    @Override
+    public List<User> usersWithMultipleFailedLogins(int deviceNum) {
+        return fetchUsersForRule(24);
+    }
+
+    private List<User> fetchUsersForRule(int ruleNumber) {
         List<UserTrait> users = new LinkedList<>();
-        QueryResults userResults = session.getQueryResults("fetchAllUsersThatTriggeredSixOrMoreAlarms");
+        QueryResults userResults = session.getQueryResults("fetchUsersForReportCreation");
         for(QueryResultsRow singleRow : userResults) {
-            users.add((UserTrait) singleRow.get("$user"));
+            UserTrait trait = (UserTrait) singleRow.get("$user");
+            if(trait.getRuleTriggered().equals("#" + ruleNumber)) {
+                users.add(trait);
+            }
         }
 
         return fromTraitToModel(users);

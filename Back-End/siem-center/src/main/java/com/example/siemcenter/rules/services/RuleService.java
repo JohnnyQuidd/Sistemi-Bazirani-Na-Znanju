@@ -19,4 +19,6 @@ public interface RuleService {
     List<Alarm> getAlarmForRule(String ruleName);
 
     List<User> getUsersForSixOrMoreAlarms();
+
+    List<User> usersWithMultipleFailedLogins(int deviceNum);
 }

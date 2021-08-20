@@ -67,6 +67,7 @@ public class UserController {
 
     @GetMapping(path = "/failedLogin")
     public ResponseEntity<?> getUsersThatFailedToLogInFromNumberOfDevices(@RequestParam("deviceNum") int deviceNum) {
-        return ResponseEntity.ok(deviceNum);
+        List<User> userList = ruleService.usersWithMultipleFailedLogins(deviceNum);
+        return ResponseEntity.ok(userList);
     }
 }

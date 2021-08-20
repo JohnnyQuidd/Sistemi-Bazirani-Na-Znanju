@@ -38,9 +38,36 @@ rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months
     then
         logger.info("#23 user inserted in WM: " + $user.toString());
         UserTrait $trait = new UserTrait($user);
+        $trait.setRuleTriggered("#23");
         insert($trait);
 end
 
-query fetchAllUsersThatTriggeredSixOrMoreAlarms()
+query fetchUsersForReportCreation()
     $user: UserTrait()
+end
+
+// TODO: N different devices within 12 hours
+rule "#24 Failed attempts to login from N different devices in a time span of 12 hours" salience 5
+    when
+        $log: Log(message.toLowerCase() contains "login"
+                || message.toLowerCase() contains "log in"
+                || message.toLowerCase() contains "log-in",
+                logType == LogType.ERROR,
+                $user: user,
+                $ip: device.getIpAddress()
+        )
+        Number(intValue > 1) from accumulate (
+            $l: Log(message.toLowerCase() contains "login"
+                    || message.toLowerCase() contains "log in"
+                    || message.toLowerCase() contains "log-in",
+                    user == $user,
+                    device.getIpAddress() != $ip,
+                    logType == LogType.ERROR
+            ) over window:time(12h), count($l)
+        )
+    then
+        logger.info("#24 user inserted in WM: " + $user.toString());
+        UserTrait $trait = new UserTrait($user);
+        $trait.setRuleTriggered("#24");
+        insert($trait);
 end
