@@ -28,6 +28,7 @@ public class Alarm {
     private FactStatus factStatus;
     private String ruleTriggered;
     private String ipAddress;
+    private String os;
 
     @ManyToMany
     @JoinTable(name = "alarm_log",

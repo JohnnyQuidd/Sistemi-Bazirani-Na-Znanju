@@ -1,5 +1,6 @@
 package com.example.siemcenter.alarms.controllers;
 
+import com.example.siemcenter.alarms.dtos.AlarmFilterDTO;
 import com.example.siemcenter.alarms.dtos.AlarmSearchDTO;
 import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.services.AlarmService;
@@ -27,6 +28,12 @@ public class AlarmController {
     @PostMapping("/search")
     public ResponseEntity<List<Alarm>> getAlarmsForProvidedCriteria(@RequestBody AlarmSearchDTO alarmDTO) {
         List<Alarm> alarmList = alarmService.findAlarmsThatMatchCriteria(alarmDTO);
+        return ResponseEntity.ok(alarmList);
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<List<Alarm>> filterAlarms(@RequestBody AlarmFilterDTO alarmDTO) {
+        List<Alarm> alarmList = alarmService.filterAlarms(alarmDTO);
         return ResponseEntity.ok(alarmList);
     }
 }

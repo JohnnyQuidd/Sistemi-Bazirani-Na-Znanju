@@ -26,7 +26,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -126,7 +125,7 @@ public class LogServiceImpl implements LogService {
     @Override
     public List<Log> filterLogs(LogFilterDTO logDTO) {
         logDTO = formatFilterDTO(logDTO);
-        List<Log> logList = new LinkedList<>();
+        List<Log> logList;
         if(logDTO.isLogsPerMachine()) {
             logList = logRepository.findByDevice_IpAddress(logDTO.getChosenDevice());
         }

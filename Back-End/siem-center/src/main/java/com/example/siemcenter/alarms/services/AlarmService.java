@@ -1,5 +1,6 @@
 package com.example.siemcenter.alarms.services;
 
+import com.example.siemcenter.alarms.dtos.AlarmFilterDTO;
 import com.example.siemcenter.alarms.dtos.AlarmSearchDTO;
 import com.example.siemcenter.alarms.models.Alarm;
 
@@ -11,4 +12,6 @@ public interface AlarmService {
     void insertNewAlarm(Alarm alarm);
 
     List<Alarm> findAlarmsThatMatchCriteria(AlarmSearchDTO alarmDTO);
+
+    List<Alarm> filterAlarms(AlarmFilterDTO alarmDTO);
 }

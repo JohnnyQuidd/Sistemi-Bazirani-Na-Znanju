@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class AlarmFilterDTO {
-    private boolean logsPerMachine;
-    private boolean logsPerSystem;
+    private boolean alarmsPerMachine;
+    private boolean alarmsPerSystem;
     private String chosenDevice;
     private String chosenSystem;
     private String date;

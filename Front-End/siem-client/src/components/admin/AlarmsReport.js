@@ -74,7 +74,18 @@ function AlarmsReport() {
       date,
     };
     
-    console.log(data);
+    axios({
+      method: 'POST',
+      url: API + 'alarms/filter',
+      data: data
+    }).then(response => {
+      let temp = response.data;
+      temp = prettifyDateTime(temp);
+      setAlarms(temp);
+      console.log(temp);
+    }).catch(err => {
+      console.log(err);
+    });
   };
 
   const expandModal = (data) => {
