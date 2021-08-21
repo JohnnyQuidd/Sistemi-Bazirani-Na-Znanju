@@ -48,7 +48,6 @@ function Dashboard() {
       let date = new Date(timestamp);
       users[i]["lastTimeUserWasActive"] =
         date.getDate() +
-        1 +
         "/" +
         (date.getMonth() + 1) +
         "/" +

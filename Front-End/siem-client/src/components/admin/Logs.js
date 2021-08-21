@@ -28,7 +28,6 @@ function Logs() {
       let date = new Date(timestamp);
       logs[i]["timestamp"] =
         date.getDate() +
-        1 +
         "/" +
         (date.getMonth() + 1) +
         "/" +

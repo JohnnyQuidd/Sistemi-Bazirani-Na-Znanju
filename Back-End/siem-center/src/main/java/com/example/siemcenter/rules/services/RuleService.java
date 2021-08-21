@@ -25,4 +25,6 @@ public interface RuleService {
     List<User> getUsersForTenAlarmsInTenPastDays();
 
     List<Log> fetchLogsByRegex(String regex);
+
+    List<Alarm> fetchAlarmsByRegex(String regex);
 }
