@@ -47,7 +47,8 @@ rule "#1 Failed to login from a device that has already failed to log in" salien
         Log $log = $logs.get(0);
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
-
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
 
         alarmRepository.save($newAlarm);
 
@@ -78,6 +79,8 @@ rule "#2 Failed to login with a same username multiple times" salience 5
         $newAlarm.setRuleTriggered("#2 Failed to login with a same username multiple times");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
+        $newAlarm.setIpAddress($currentLog.getDevice().getIpAddress());
+        $newAlarm.setOs($currentLog.getOs().getName());
         $newAlarm.getRelatedLogs().add($currentLog);
         $newAlarm.getRelatedUsers().add($currentLog.getUser());
 
@@ -100,6 +103,9 @@ rule "#3 Log with type ERROR occurred" salience 5
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
+
         alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("#3 Log with type ERROR occurred");
@@ -120,6 +126,9 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         $newAlarm.setTimestamp(LocalDateTime.now());
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
+
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
 
         alarmRepository.save($newAlarm);
         insert($newAlarm);
@@ -147,6 +156,8 @@ rule "#5 15 or more failed attempts to login from a same device over a course of
         Log $log = $logs.get(0);
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
 
         alarmRepository.save($newAlarm);
         insert($newAlarm);
@@ -185,6 +196,9 @@ rule "#6 Successful logins from same user from different devices in a time span 
         $newAlarm.getRelatedLogs().add($log2);
         $newAlarm.getRelatedUsers().add($user);
 
+        $newAlarm.setIpAddress($log1.getDevice().getIpAddress());
+        $newAlarm.setOs($log1.getOs().getName());
+
         alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("User logged in from different devices in a time span less than 10 seconds");
@@ -208,6 +222,9 @@ rule "#7 Threat registered by antivirus is not dealt with in an hour from time o
 
         $newAlarm.getRelatedLogs().add($log1);
         $newAlarm.getRelatedUsers().add($log1.getUser());
+
+        $newAlarm.setIpAddress($log1.getDevice().getIpAddress());
+        $newAlarm.setOs($log1.getOs().getName());
 
         alarmRepository.save($newAlarm);
         insert($newAlarm);
@@ -250,6 +267,9 @@ rule "#8 Successful login to a system followed by a user information changed" sa
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
+
         alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("#8 Successful login to a system followed by a user information changed");
@@ -284,6 +304,9 @@ rule "#9 Over 10 days 7 or more threats detected from the same device" salience 
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
+
         alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("#9 Over 10 days 7 or more threats detected from the same device");
@@ -304,6 +327,9 @@ rule "#10 Login attempt from malicious device, regardless being successful or no
         $newAlarm.setRuleTriggered("#10 Login attempt from malicious device, regardless being successful or not");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
+
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
         insert($newAlarm);
@@ -320,6 +346,9 @@ rule "#11 Log detected from malicious device" salience 5
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
         $newAlarm.setRuleTriggered("#11 Log detected from malicious device");
         $newAlarm.setTimestamp(LocalDateTime.now());
+
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
 
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());

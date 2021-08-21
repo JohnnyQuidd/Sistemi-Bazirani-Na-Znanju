@@ -45,6 +45,8 @@ rule "#14 Brute force is detected on a login system" salience 5
         $newAlarm.setRuleTriggered("#14 Brute force is detected on a login system");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
@@ -75,6 +77,8 @@ rule "#13 DDoS attack that is targeting payment system triggers payment alarm" s
         $newAlarm.setRuleTriggered("#13 DDoS attack that is targeting payment system triggers payment alarm");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
@@ -95,6 +99,8 @@ rule "#12 DDoS attack is detected if system receives 50 or more request in 60 se
         $newAlarm.setRuleTriggered("#12 DDoS attack is detected if system receives 50 or more request in 60 seconds");
         $newAlarm.setTimestamp(LocalDateTime.now());
 
+        $newAlarm.setIpAddress($log.getDevice().getIpAddress());
+        $newAlarm.setOs($log.getOs().getName());
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
