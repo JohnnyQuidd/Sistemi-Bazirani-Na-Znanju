@@ -24,7 +24,6 @@ import javax.validation.Valid;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -123,6 +122,9 @@ public class LogServiceImpl implements LogService {
     }
 
     private LogSearchDTO formatDTO(LogSearchDTO dto) {
+        if(dto.getDate().equals("null")) {
+          return dto;
+        }
         dto.setMessage(dto.getMessage().trim());
         String[] date = dto.getDate().split(",");
 
@@ -145,6 +147,7 @@ public class LogServiceImpl implements LogService {
             return logRepository.findByMessageContains(logDTO.getMessage());
         }
         if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+            // TODO: Fetch from repository instead
             return ruleService.fetchLogsByRegex(logDTO.getMessage());
         }
 
