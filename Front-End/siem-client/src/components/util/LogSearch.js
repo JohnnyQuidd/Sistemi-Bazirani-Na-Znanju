@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import DatePicker from "react-multi-date-picker";
 import "../style/LogSearch.css";
-import "react-multi-date-picker/styles/colors/purple.css";
-import "react-multi-date-picker/styles/layouts/prime.css";
 
 function LogSearch({ query }) {
   const [message, setMessage] = useState("");

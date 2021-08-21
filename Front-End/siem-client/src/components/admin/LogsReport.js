@@ -1,11 +1,11 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { API } from "../../common/API";
-import "../style/Reports.css";
+import "../style/LogsReport.css";
 import LogsTable from "../tables/LogsTable";
 import DatePicker from "react-multi-date-picker";
 
-function Reports() {
+function LogsReport() {
   const [logs, setLogs] = useState([]);
   const [logsPerMachine, setLogsPerMachine] = useState(false);
   const [logsPerSystem, setLogsPerSystem] = useState(false);
@@ -186,4 +186,4 @@ function Reports() {
   );
 }
 
-export default Reports;
+export default LogsReport;
