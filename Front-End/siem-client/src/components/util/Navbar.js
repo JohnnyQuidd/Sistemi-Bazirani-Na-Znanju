@@ -5,6 +5,7 @@ function Navbar({ page }) {
   const [adminClass, setAdminClass] = useState("inactive");
   const [logsClass, setLogsClass] = useState("inactive");
   const [alarmsClass, setAlarmsClass] = useState("inactive");
+  const [reportsClass, setReportsClass] = useState("inactive");
 
   useEffect(() => {
     setPage(page);
@@ -16,16 +17,25 @@ function Navbar({ page }) {
         setAdminClass("active");
         setLogsClass("inactive");
         setAlarmsClass("inactive");
+        setReportsClass("inactive");
         break;
       case "logs":
         setAdminClass("inactive");
         setLogsClass("active");
         setAlarmsClass("inactive");
+        setReportsClass("inactive");
         break;
       case "alarms":
         setAdminClass("inactive");
         setLogsClass("inactive");
         setAlarmsClass("active");
+        setReportsClass("inactive");
+        break;
+      case "reports":
+        setAdminClass("inactive");
+        setLogsClass("inactive");
+        setAlarmsClass("inactive");
+        setReportsClass("active");
         break;
     }
   };
@@ -45,6 +55,11 @@ function Navbar({ page }) {
       <li>
         <a className={alarmsClass} href="/alarms">
           Alarms
+        </a>
+      </li>
+      <li>
+        <a className={alarmsClass} href="/reports">
+          Reports
         </a>
       </li>
     </ul>

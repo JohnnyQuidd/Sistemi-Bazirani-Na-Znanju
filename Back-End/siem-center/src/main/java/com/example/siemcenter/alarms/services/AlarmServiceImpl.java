@@ -91,24 +91,9 @@ public class AlarmServiceImpl implements AlarmService {
         }
 
         if(dto.isRegex() && !dto.getMessage().equals("")) {
-            // TODO: Regex
+            return ruleService.fetchAlarmsByRegex(dto.getMessage());
         }
 
         return alarmRepository.findAll();
     }
 }
-/*
-
-
-    private List<Log> fetchLogs(LogSearchDTO logDTO) {
-        if(!logDTO.isRegex() && !logDTO.getMessage().equals("")) {
-            return logRepository.findByMessageContains(logDTO.getMessage());
-        }
-        if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
-            // TODO: Fetch from repository instead
-            return ruleService.fetchLogsByRegex(logDTO.getMessage());
-        }
-
-        return logRepository.findAll();
-    }
-* */

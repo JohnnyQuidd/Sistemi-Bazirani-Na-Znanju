@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Alarms from "../admin/Alarms";
 import Dashboard from "../admin/Dashboard";
 import Logs from "../admin/Logs";
+import Reports from "../admin/Reports";
 import Login from "../login/Login";
 import Navbar from "./Navbar";
 
@@ -20,6 +21,7 @@ function Wrapper() {
           <Route path="/login" component={Login} />
           <Route path="/logs" component={Logs} />
           <Route path="/alarms" component={Alarms} />
+          <Route path="/reports" component={Reports} />
           <Route path="/" component={Login} />
         </Switch>
       </Router>

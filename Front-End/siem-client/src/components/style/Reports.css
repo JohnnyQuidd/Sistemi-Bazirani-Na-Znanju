@@ -1,0 +1,10 @@
+.reports-wrapper {
+  color: white;
+  text-align: center;
+}
+
+.activity-report {
+  width: max-content;
+  margin: 2rem auto;
+  font-size: 2.2rem;
+}
