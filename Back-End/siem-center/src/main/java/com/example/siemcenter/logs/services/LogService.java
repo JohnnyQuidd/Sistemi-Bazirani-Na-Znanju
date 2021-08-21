@@ -1,6 +1,7 @@
 package com.example.siemcenter.logs.services;
 
 import com.example.siemcenter.logs.dtos.LogDTO;
+import com.example.siemcenter.logs.dtos.LogFilterDTO;
 import com.example.siemcenter.logs.dtos.LogSearchDTO;
 import com.example.siemcenter.logs.models.Log;
 
@@ -16,4 +17,6 @@ public interface LogService {
     Log createLogFromDTO(LogDTO logDTO);
 
     List<Log> searchLogs(LogSearchDTO logDTO);
+
+    List<Log> filterLogs(LogFilterDTO logDTO);
 }

@@ -9,6 +9,7 @@ import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.common.repositories.OperatingSystemRepository;
 import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.dtos.LogDTO;
+import com.example.siemcenter.logs.dtos.LogFilterDTO;
 import com.example.siemcenter.logs.dtos.LogSearchDTO;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
@@ -25,6 +26,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -119,6 +121,57 @@ public class LogServiceImpl implements LogService {
         }
 
         return logList;
+    }
+
+    @Override
+    public List<Log> filterLogs(LogFilterDTO logDTO) {
+        logDTO = formatFilterDTO(logDTO);
+        List<Log> logList = new LinkedList<>();
+        if(logDTO.isLogsPerMachine()) {
+            logList = logRepository.findByDevice_IpAddress(logDTO.getChosenDevice());
+        }
+        else if (logDTO.isLogsPerSystem()) {
+            logList = logRepository.findByOs_Name(logDTO.getChosenSystem());
+        }
+        else {
+            logList = logRepository.findAll();
+        }
+
+        if(logDTO.getStartDate() != null) {
+            LogFilterDTO finalLogDTO2 = logDTO;
+            logList = logList.stream()
+                    .filter(log -> log.getTimestamp().toLocalDate().isAfter(finalLogDTO2.getStartDate()))
+                    .collect(Collectors.toList());
+        }
+
+        if(logDTO.getEndDate() != null) {
+            LogFilterDTO finalLogDTO3 = logDTO;
+            logList = logList.stream()
+                    .filter(log -> log.getTimestamp().toLocalDate().isBefore(finalLogDTO3.getEndDate()))
+                    .collect(Collectors.toList());
+        }
+
+        return logList;
+    }
+
+    private LogFilterDTO formatFilterDTO(LogFilterDTO dto) {
+        if(dto.getDate().equals("null")) {
+            return dto;
+        }
+        String[] date = dto.getDate().split(",");
+
+        String startString = date[0].substring(1);
+        Timestamp startTimestamp = new Timestamp(Long.parseLong(startString));
+        LocalDate start = startTimestamp.toLocalDateTime().toLocalDate();
+
+        String endString = date[1].substring(0, date[1].length()-1);
+        Timestamp endTimestamp = new Timestamp(Long.parseLong(endString));
+        LocalDate end = endTimestamp.toLocalDateTime().toLocalDate();
+
+        dto.setStartDate(start);
+        dto.setEndDate(end);
+
+        return dto;
     }
 
     private LogSearchDTO formatDTO(LogSearchDTO dto) {

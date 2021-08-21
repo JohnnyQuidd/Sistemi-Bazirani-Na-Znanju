@@ -5,7 +5,6 @@ import "../style/Reports.css";
 import LogsTable from "../tables/LogsTable";
 import DatePicker from "react-multi-date-picker";
 
-
 function Reports() {
   const [logs, setLogs] = useState([]);
   const [logsPerMachine, setLogsPerMachine] = useState(false);
@@ -15,7 +14,7 @@ function Reports() {
   const [chosenDevice, setChosenDevice] = useState(null);
   const [systems, setSystems] = useState([]);
   const [chosenSystem, setChosenSystem] = useState(null);
-  const [date, setDate] = useState(null);
+  const [datePickerValue, setDatePickerValue] = useState(null);
 
   useEffect(() => {
     fetchDevices();
@@ -29,7 +28,7 @@ function Reports() {
       url: API + "devices",
     })
       .then((response) => {
-        setChosenDevice(response.data[0]);
+        setChosenDevice(response.data[0].ipAddress);
         setDevices(response.data);
       })
       .catch((err) => {
@@ -43,7 +42,7 @@ function Reports() {
       url: API + "systems",
     })
       .then((response) => {
-        setChosenSystem(response.data[0]);
+        setChosenSystem(response.data[0].name);
         setSystems(response.data);
       })
       .catch((err) => {
@@ -88,18 +87,34 @@ function Reports() {
     return logs;
   };
 
-  const handleChosenMachine = event => {
+  const handleChosenMachine = (event) => {
     setChosenDevice(event.target.value);
-  }
+  };
 
-  const handleChosenSystem = event => {
+  const handleChosenSystem = (event) => {
     setChosenSystem(event.target.value);
-  }
+  };
 
   const filterLogs = () => {
-    const data = {logsPerMachine, logsPerSystem, chosenDevice, chosenSystem, date};
-    console.log(data);
-  }
+    let date = JSON.stringify(datePickerValue);
+    const data = {
+      logsPerMachine,
+      logsPerSystem,
+      chosenDevice,
+      chosenSystem,
+      date,
+    };
+
+    axios({
+      url: API + 'logs/filter',
+      method: 'POST',
+      data: data
+    }).then(response => {
+      setLogs(response.data);
+    }).catch(err => {
+      console.log(err);
+    });
+  };
 
   return (
     <div className="reports-wrapper">
@@ -107,40 +122,64 @@ function Reports() {
       <div className="logs-filter">
         <div className="logs-radio-1">
           <label className="logs-label">Logs per machine</label>
-          <input type="radio" name="logs" value={logsPerMachine} onChange={() => { setLogsPerMachine(true); setLogsPerSystem(false);}} />
+          <input
+            type="radio"
+            name="logs"
+            value={logsPerMachine}
+            onChange={() => {
+              setLogsPerMachine(true);
+              setLogsPerSystem(false);
+            }}
+          />
         </div>
         <div className="logs-radio-2">
           <label className="logs-label">Logs per system</label>
-          <input type="radio" name="logs" value={logsPerSystem} onChange ={() => {setLogsPerMachine(false); setLogsPerSystem(true);}} />
+          <input
+            type="radio"
+            name="logs"
+            value={logsPerSystem}
+            onChange={() => {
+              setLogsPerMachine(false);
+              setLogsPerSystem(true);
+            }}
+          />
         </div>
-        {
-          devices && 
-          <select className="machine-select" disabled={!logsPerMachine} onChange={handleChosenMachine} value={chosenDevice}>
-          {
-            devices.map(device => {
-              return (<option value={device.ipAddress}> {device.ipAddress} </option>)
-            })
-          }
-        </select>
-        }
-        {
-          systems &&
-          <select className="system-select" disabled={!logsPerSystem} onChange={handleChosenSystem} value={chosenSystem}>
-          {
-              systems.map(system => {
-                return (<option value={system.name}> {system.name} </option>)
-              })
-            }
+        {devices && (
+          <select
+            className="machine-select"
+            disabled={!logsPerMachine}
+            onChange={handleChosenMachine}
+            value={chosenDevice}
+          >
+            {devices.map((device) => {
+              return (
+                <option key={device.id} value={device.ipAddress}> {device.ipAddress} </option>
+              );
+            })}
           </select>
-        }
+        )}
+        {systems && (
+          <select
+            className="system-select"
+            disabled={!logsPerSystem}
+            onChange={handleChosenSystem}
+            value={chosenSystem}
+          >
+            {systems.map((system) => {
+              return <option key={system.id} value={system.name}> {system.name} </option>;
+            })}
+          </select>
+        )}
         <DatePicker
-          value={date}
-          onChange={setDate}
+          value={datePickerValue}
+          onChange={setDatePickerValue}
           format="DD/MM/YYYY"
           isClearable
           range
         />
-        <button className="search-logs" onClick={filterLogs}>Search</button>
+        <button className="search-logs" onClick={filterLogs}>
+          Search
+        </button>
       </div>
       {logs && <LogsTable logsData={logs} expandModal={expandModal} />}
     </div>

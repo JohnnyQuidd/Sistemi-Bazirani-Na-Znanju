@@ -58,7 +58,7 @@ function Navbar({ page }) {
         </a>
       </li>
       <li>
-        <a className={alarmsClass} href="/reports">
+        <a className={reportsClass} href="/reports">
           Reports
         </a>
       </li>
