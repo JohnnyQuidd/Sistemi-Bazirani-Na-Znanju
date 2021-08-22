@@ -15,11 +15,13 @@ import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
+import com.example.siemcenter.util.DevicesForUser;
 
 global Logger logger;
 global DeviceRepository deviceRepository;
 global AlarmRepository alarmRepository;
 global UserRepository userRepository;
+global DevicesForUser devicesForUser;
 
 declare ProcessedLog
     ruleTriggered: String

@@ -13,8 +13,7 @@ import java.util.List;
 public interface LogRepository extends JpaRepository<Log, Long> {
     @Query(value = "SELECT * FROM LOG WHERE MESSAGE LIKE CONCAT('%', ?1, '%')", nativeQuery = true)
     List<Log> findByMessageContains(String partOfAMessage);
-
     List<Log> findByDevice_IpAddress(String ipAddress);
-
     List<Log> findByOs_Name(String chosenSystem);
+    List<Log> findByUser_Username(String username);
 }

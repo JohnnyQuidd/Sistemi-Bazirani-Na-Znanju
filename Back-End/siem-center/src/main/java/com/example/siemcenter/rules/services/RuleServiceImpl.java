@@ -2,13 +2,13 @@ package com.example.siemcenter.rules.services;
 
 import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
-import com.example.siemcenter.alarms.services.AlarmService;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.drools.UserTrait;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
+import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
@@ -35,6 +35,7 @@ public class RuleServiceImpl implements RuleService {
     private DeviceRepository deviceRepository;
     private AlarmRepository alarmRepository;
     private UserRepository userRepository;
+    private DevicesForUser devicesForUser;
     private static Integer DEVICE_NUMBER = 1;
 
 
@@ -42,11 +43,13 @@ public class RuleServiceImpl implements RuleService {
     public RuleServiceImpl(RuleRepository ruleRepository,
                            DeviceRepository deviceRepository,
                            AlarmRepository alarmRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           DevicesForUser devicesForUser) {
         this.ruleRepository = ruleRepository;
         this.deviceRepository = deviceRepository;
         this.alarmRepository = alarmRepository;
         this.userRepository = userRepository;
+        this.devicesForUser = devicesForUser;
 
         session = setUpSessionForStreamProcessingMode();
 
@@ -54,6 +57,7 @@ public class RuleServiceImpl implements RuleService {
         session.setGlobal("deviceRepository", deviceRepository);
         session.setGlobal("alarmRepository", alarmRepository);
         session.setGlobal("userRepository", userRepository);
+        session.setGlobal("devicesForUser", devicesForUser);
         session.setGlobal("deviceNumber", DEVICE_NUMBER);
     }
 
