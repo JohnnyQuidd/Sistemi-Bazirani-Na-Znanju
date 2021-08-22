@@ -14,3 +14,11 @@ end
 query fetchAlarmsForRuleName(String $ruleName)
     $alarms: Alarm(ruleTriggered == $ruleName)
 end
+
+query fetchLogsByRegex(String $regex)
+    $regexLogs: Log(message matches $regex)
+end
+
+query fetchAlarmsByRegex(String $regex)
+    $regexAlarms: Alarm(message matches $regex)
+end

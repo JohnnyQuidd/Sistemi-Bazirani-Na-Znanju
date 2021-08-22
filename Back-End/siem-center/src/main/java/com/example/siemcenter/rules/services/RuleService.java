@@ -23,4 +23,8 @@ public interface RuleService {
     List<User> usersWithMultipleFailedLogins(int deviceNum);
 
     List<User> getUsersForTenAlarmsInTenPastDays();
+
+    List<Log> fetchLogsByRegex(String regex);
+
+    List<Alarm> fetchAlarmsByRegex(String regex);
 }

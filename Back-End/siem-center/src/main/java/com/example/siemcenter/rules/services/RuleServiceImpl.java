@@ -1,6 +1,7 @@
 package com.example.siemcenter.rules.services;
 
 import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.alarms.services.AlarmService;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
@@ -32,7 +33,7 @@ public class RuleServiceImpl implements RuleService {
     private RuleRepository ruleRepository;
     private KieSession session;
     private DeviceRepository deviceRepository;
-    private AlarmService alarmService;
+    private AlarmRepository alarmRepository;
     private UserRepository userRepository;
     private static Integer DEVICE_NUMBER = 1;
 
@@ -40,18 +41,18 @@ public class RuleServiceImpl implements RuleService {
     @Autowired
     public RuleServiceImpl(RuleRepository ruleRepository,
                            DeviceRepository deviceRepository,
-                           AlarmService alarmService,
+                           AlarmRepository alarmRepository,
                            UserRepository userRepository) {
         this.ruleRepository = ruleRepository;
         this.deviceRepository = deviceRepository;
-        this.alarmService = alarmService;
+        this.alarmRepository = alarmRepository;
         this.userRepository = userRepository;
 
         session = setUpSessionForStreamProcessingMode();
 
         session.setGlobal("logger", logger);
         session.setGlobal("deviceRepository", deviceRepository);
-        session.setGlobal("alarmService", alarmService);
+        session.setGlobal("alarmRepository", alarmRepository);
         session.setGlobal("userRepository", userRepository);
         session.setGlobal("deviceNumber", DEVICE_NUMBER);
     }
@@ -135,6 +136,25 @@ public class RuleServiceImpl implements RuleService {
         }
 
         return fromTraitToModel(users);
+    }
+
+    public List<Log> fetchLogsByRegex(String regex) {
+        List<Log> logList = new LinkedList<>();
+        QueryResults logResults = session.getQueryResults("fetchLogsByRegex", regex);
+        for(QueryResultsRow singleRow : logResults) {
+            logList.add((Log) singleRow.get("$regexLogs"));
+        }
+        return logList;
+    }
+
+    @Override
+    public List<Alarm> fetchAlarmsByRegex(String regex) {
+        List<Alarm> alarmList = new LinkedList<>();
+        QueryResults logResults = session.getQueryResults("fetchAlarmsByRegex", regex);
+        for(QueryResultsRow singleRow : logResults) {
+            alarmList.add((Alarm) singleRow.get("$regexAlarms"));
+        }
+        return alarmList;
     }
 
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {

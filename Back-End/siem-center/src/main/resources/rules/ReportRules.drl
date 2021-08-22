@@ -10,7 +10,7 @@ import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.alarms.models.Alarm;
-import com.example.siemcenter.alarms.services.AlarmService;
+import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.users.models.User;
@@ -20,7 +20,7 @@ import com.example.siemcenter.users.repositories.UserRepository;
 
 global Logger logger;
 global DeviceRepository deviceRepository;
-global AlarmService alarmService;
+global AlarmRepository alarmRepository;
 global UserRepository userRepository;
 global Integer deviceNumber;
 

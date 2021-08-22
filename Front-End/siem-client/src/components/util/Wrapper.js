@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Alarms from "../admin/Alarms";
+import AlarmsReport from "../admin/AlarmsReport";
 import Dashboard from "../admin/Dashboard";
 import Logs from "../admin/Logs";
+import LogsReport from "../admin/LogsReport";
 import Login from "../login/Login";
 import Navbar from "./Navbar";
 
@@ -20,6 +22,8 @@ function Wrapper() {
           <Route path="/login" component={Login} />
           <Route path="/logs" component={Logs} />
           <Route path="/alarms" component={Alarms} />
+          <Route path="/logs-report" component={LogsReport} />
+          <Route path="/alarms-report" component={AlarmsReport} />
           <Route path="/" component={Login} />
         </Switch>
       </Router>

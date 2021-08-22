@@ -1,8 +1,9 @@
-package com.example.siemcenter.common.services;
+package com.example.siemcenter.common.services.implementations;
 
 import com.example.siemcenter.common.exceptions.ResourceNotFoundException;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.SoftwareRepository;
+import com.example.siemcenter.common.services.SoftwareService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
