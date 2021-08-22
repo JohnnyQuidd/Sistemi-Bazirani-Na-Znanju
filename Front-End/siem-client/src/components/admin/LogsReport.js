@@ -165,8 +165,7 @@ function LogsReport() {
             {devices.map((device) => {
               return (
                 <option key={device.id} value={device.ipAddress}>
-                  {" "}
-                  {device.ipAddress}{" "}
+                  {device.ipAddress}
                 </option>
               );
             })}
