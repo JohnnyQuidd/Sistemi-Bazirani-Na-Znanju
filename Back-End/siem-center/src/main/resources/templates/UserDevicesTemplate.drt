@@ -2,6 +2,7 @@ template header
 numberOfDevices
 previousRiskCategory
 newRiskCategory
+days
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,7 @@ global AlarmRepository alarmRepository;
 global UserRepository userRepository;
 global DevicesForUser devicesForUser;
 
+
 template "UserDevicesTemplate"
     rule "Categorize Users_@{row.rowNumber}"
     no-loop true
@@ -39,6 +41,7 @@ template "UserDevicesTemplate"
                         riskCategory == RiskCategory.@{previousRiskCategory}
             )
             eval(devicesForUser.getNumberOfDevicesForUser($currentUser.getUsername()) >= @{numberOfDevices})
+            over window:time(@{days}d)
         then
             modify($user) {
                 setRiskCategory(RiskCategory.@{newRiskCategory});

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/rules")
 public class RuleController {
@@ -20,7 +22,7 @@ public class RuleController {
     }
 
     @PostMapping("/users/devices")
-    public ResponseEntity<?> creteNewRuleForUserAndNumberOfAllowedDevices(@RequestBody RuleUserDTO dto) {
+    public ResponseEntity<?> creteNewRuleForUserAndNumberOfAllowedDevices(@Valid @RequestBody RuleUserDTO dto) {
         ruleService.createNewRuleFromUserDeviceDTO(dto);
         return ResponseEntity.ok("");
     }
