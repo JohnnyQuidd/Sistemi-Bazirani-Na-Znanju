@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { API } from "../../common/API";
 import "../style/LogsReport.css";
 import LogsTable from "../tables/LogsTable";
+import LogModal from "../modals/LogModal";
 import DatePicker from "react-multi-date-picker";
 
 function LogsReport() {
@@ -15,6 +16,10 @@ function LogsReport() {
   const [systems, setSystems] = useState([]);
   const [chosenSystem, setChosenSystem] = useState(null);
   const [datePickerValue, setDatePickerValue] = useState(null);
+  const [chosenLog, setChosenLog] = useState(null);
+  const [counter, setCounter] = useState(0);
+  const [showCounter, setShowCounter] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDevices();
@@ -58,11 +63,13 @@ function LogsReport() {
       let temp = response.data;
       temp = prettifyDateTime(temp);
       setLogs(temp);
+      setShowCounter(false);
     });
   };
 
-  const expandModal = (data) => {
-    console.log(data);
+  const expandModal = (log) => {
+    setChosenLog(log);
+    setIsModalOpen(true);
   };
 
   const prettifyDateTime = (logs) => {
@@ -106,14 +113,18 @@ function LogsReport() {
     };
 
     axios({
-      url: API + 'logs/filter',
-      method: 'POST',
-      data: data
-    }).then(response => {
-      setLogs(response.data);
-    }).catch(err => {
-      console.log(err);
-    });
+      url: API + "logs/filter",
+      method: "POST",
+      data: data,
+    })
+      .then((response) => {
+        setLogs(response.data);
+        setCounter(response.data.length);
+        setShowCounter(true);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -153,7 +164,10 @@ function LogsReport() {
           >
             {devices.map((device) => {
               return (
-                <option key={device.id} value={device.ipAddress}> {device.ipAddress} </option>
+                <option key={device.id} value={device.ipAddress}>
+                  {" "}
+                  {device.ipAddress}{" "}
+                </option>
               );
             })}
           </select>
@@ -166,7 +180,12 @@ function LogsReport() {
             value={chosenSystem}
           >
             {systems.map((system) => {
-              return <option key={system.id} value={system.name}> {system.name} </option>;
+              return (
+                <option key={system.id} value={system.name}>
+                  {" "}
+                  {system.name}{" "}
+                </option>
+              );
             })}
           </select>
         )}
@@ -182,6 +201,18 @@ function LogsReport() {
         </button>
       </div>
       {logs && <LogsTable logsData={logs} expandModal={expandModal} />}
+      <LogModal
+        log={chosenLog}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
+      {showCounter ? (
+        <p className="log-counter">
+          Number of logs that satisfy given criteria: {counter}
+        </p>
+      ) : (
+        <p className="log-counter">Total number of logs {logs.length}</p>
+      )}
     </div>
   );
 }

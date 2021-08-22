@@ -4,6 +4,7 @@ import { API } from "../../common/API";
 import "../style/AlarmsReport.css";
 import DatePicker from "react-multi-date-picker";
 import AlarmsTable from "../tables/AlarmsTable";
+import AlarmModal from "../modals/AlarmModal";
 
 function AlarmsReport() {
   const [alarms, setAlarms] = useState([]);
@@ -14,6 +15,10 @@ function AlarmsReport() {
   const [alarmsPerMachine, setAlarmsPerMachine] = useState(false);
   const [alarmsPerSystem, setAlarmsPerSystem] = useState(false);
   const [datePickerValue, setDatePickerValue] = useState(null);
+  const [chosenAlarm, setChosenAlarm] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(null);
+  const [counter, setCounter] = useState(0);
+  const [showCounter, setShowCounter] = useState(false);
 
   useEffect(() => {
     fetchDevices();
@@ -58,11 +63,12 @@ function AlarmsReport() {
         let temp = response.data;
         temp = prettifyDateTime(temp);
         setAlarms(temp);
+        setShowCounter(false);
       })
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
   const filterAlarms = () => {
     let date = JSON.stringify(datePickerValue);
@@ -73,23 +79,27 @@ function AlarmsReport() {
       chosenSystem,
       date,
     };
-    
+
     axios({
-      method: 'POST',
-      url: API + 'alarms/filter',
-      data: data
-    }).then(response => {
-      let temp = response.data;
-      temp = prettifyDateTime(temp);
-      setAlarms(temp);
-      console.log(temp);
-    }).catch(err => {
-      console.log(err);
-    });
+      method: "POST",
+      url: API + "alarms/filter",
+      data: data,
+    })
+      .then((response) => {
+        let temp = response.data;
+        temp = prettifyDateTime(temp);
+        setAlarms(temp);
+        setShowCounter(true);
+        setCounter(temp.length);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const expandModal = (data) => {
-    console.log(data);
+    setChosenAlarm(data);
+    setIsModalOpen(true);
   };
 
   const prettifyDateTime = (alarms) => {
@@ -196,6 +206,18 @@ function AlarmsReport() {
         </button>
       </div>
       {alarms && <AlarmsTable alarmsData={alarms} expandModal={expandModal} />}
+      <AlarmModal
+        alarm={chosenAlarm}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
+      {showCounter ? (
+        <p className="alarm-counter">
+          Number of alarms that satisfy given criteria: {counter}
+        </p>
+      ) : (
+        <p className="alarm-counter">Total number of alarms {alarms.length}</p>
+      )}
     </div>
   );
 }
