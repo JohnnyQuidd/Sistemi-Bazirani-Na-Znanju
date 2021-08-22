@@ -21,6 +21,7 @@ public class RuleController {
 
     @PostMapping("/users/devices")
     public ResponseEntity<?> creteNewRuleForUserAndNumberOfAllowedDevices(@RequestBody RuleUserDTO dto) {
+        ruleService.createNewRuleFromUserDeviceDTO(dto);
         return ResponseEntity.ok("");
     }
 }

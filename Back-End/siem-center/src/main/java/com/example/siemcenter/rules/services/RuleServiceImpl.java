@@ -4,27 +4,34 @@ import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.rules.dtos.RuleUserDTO;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.drools.UserTrait;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
+import org.drools.template.ObjectDataCompiler;
 import org.kie.api.KieServices;
+import org.kie.api.builder.Message;
+import org.kie.api.builder.Results;
+import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
+import org.kie.internal.utils.KieHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,11 +77,6 @@ public class RuleServiceImpl implements RuleService {
 
         KieSession session = kc.newKieSession("session1", ksconf);
         return session;
-    }
-
-    @Override
-    public void insertRule(Map<String, Object> ruleData) {
-
     }
 
     @Override
@@ -161,6 +163,19 @@ public class RuleServiceImpl implements RuleService {
         return alarmList;
     }
 
+    @Override
+    public void createNewRuleFromUserDeviceDTO(RuleUserDTO dto) {
+        InputStream template = RuleServiceImpl.class.getResourceAsStream("/templates/UserDevicesTemplate.drt");
+        ObjectDataCompiler converter = new ObjectDataCompiler();
+
+        List<RuleUserDTO> data = Arrays.asList(dto);
+        String drl = converter.compile(data, template);
+        logger.info("Rule created");
+        logger.info(drl);
+
+        //KieSession templateSession = createKieSessionFromDRL(drl);
+    }
+
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {
         return userTraits.stream().map(trait ->
                 User.builder()
@@ -173,4 +188,23 @@ public class RuleServiceImpl implements RuleService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    private KieSession createKieSessionFromDRL(String drl){
+        KieHelper kieHelper = new KieHelper();
+        kieHelper.addContent(drl, ResourceType.DRL);
+
+        Results results = kieHelper.verify();
+
+        if (results.hasMessages(Message.Level.WARNING, Message.Level.ERROR)){
+            List<Message> messages = results.getMessages(Message.Level.WARNING, Message.Level.ERROR);
+            for (Message message : messages) {
+                System.out.println("Error: "+message.getText());
+            }
+
+            throw new IllegalStateException("Compilation errors were found. Check the logs.");
+        }
+
+        return kieHelper.build().newKieSession();
+    }
+
 }
