@@ -8,6 +8,9 @@ import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.logs.services.LogService;
 import com.example.siemcenter.users.dtos.UserDTO;
+import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.models.Role;
+import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.users.services.UserService;
 import com.example.siemcenter.util.DevicesForUser;
@@ -68,7 +71,6 @@ public class LogsTest {
 
     @Test
     public void insertingLogTest() {
-        long beforeInsertion = logRepository.count();
         LogDTO logDTO = LogDTO.builder()
                 .logType(LogType.WARNING)
                 .ipAddress("192.168.0.1")
@@ -79,11 +81,12 @@ public class LogsTest {
                 .message("Failed login attempt")
                 .build();
 
+        long beforeInsertion = logRepository.count();
         logService.createLog(logDTO);
 
         ksession.fireAllRules();
         long afterInsertion = logRepository.count();
-        assertEquals(afterInsertion, beforeInsertion+1);
+        assertEquals(beforeInsertion+1, afterInsertion);
     }
 
     @Test
@@ -114,13 +117,12 @@ public class LogsTest {
 
         ksession.fireAllRules();
         int afterInsertion = alarmRepository.findByMessageContains("Failed to login from a device").size();
-        assertEquals(afterInsertion, beforeInsertion+1);
+        assertEquals(beforeInsertion+2, afterInsertion);
     }
 
     @Test
     public void Test2_FailedToLogInWithSameUsernameMultipleTimes() {
         int beforeInsertion = alarmRepository.findByMessageContains("Multiple failed attempts to log with same username").size();
-
         LogDTO log1 = LogDTO.builder()
                 .logType(LogType.ERROR)
                 .ipAddress("192.168.0.1")
@@ -143,13 +145,56 @@ public class LogsTest {
 
         logService.createLog(log1);
         logService.createLog(log2);
-
         ksession.fireAllRules();
+
         int afterInsertion = alarmRepository.findByMessageContains("Multiple failed attempts to log with same username").size();
-        assertEquals(afterInsertion, beforeInsertion+2);
+        assertEquals(beforeInsertion+2, afterInsertion);
     }
 
-        private static KieSession setUpSessionForStreamProcessingMode() {
+    @Test
+    public void Test3_LogWithTypeErrorOccurred() {
+        int beforeInsertion = alarmRepository.findByMessageContains("Log with type ERROR occurred").size();
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        logService.createLog(log1);
+        ksession.fireAllRules();
+
+        int afterInsertion = alarmRepository.findByMessageContains("Log with type ERROR occurred").size();
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
+    @Test
+    public void Test4_AttemptToLoginFromAccountThatWasNotActiveForMoreThan90days() {
+        int beforeInsertion = alarmRepository.findByMessageContains("User tried to log in an account that was inactive for 90 days or more").size();
+        User inactiveUser = createInactiveUser();
+        userRepository.save(inactiveUser);
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("InactiveUser")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        logService.createLog(log1);
+        ksession.fireAllRules();
+
+        int afterInsertion = alarmRepository.findByMessageContains("User tried to log in an account that was inactive for 90 days or more").size();
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
+    private static KieSession setUpSessionForStreamProcessingMode() {
         KieServices ks = KieServices.Factory.get();
         KieContainer kc = ks.newKieClasspathContainer();
 
@@ -179,5 +224,15 @@ public class LogsTest {
         userService.registerANewUser(misic98);
         userService.registerANewUser(zoran55);
         setup = true;
+    }
+
+    private User createInactiveUser() {
+        return User.builder()
+                .lastTimeUserWasActive(LocalDateTime.now().minusDays(91))
+                .username("InactiveUser")
+                .password("12345678910")
+                .riskCategory(RiskCategory.LOW)
+                .role(Role.USER)
+                .build();
     }
 }
