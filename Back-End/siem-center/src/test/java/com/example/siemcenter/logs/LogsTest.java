@@ -2,26 +2,19 @@ package com.example.siemcenter.logs;
 
 import com.example.siemcenter.SiemCenterApplication;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
-import com.example.siemcenter.common.models.Device;
-import com.example.siemcenter.common.models.FactStatus;
-import com.example.siemcenter.common.models.OperatingSystem;
-import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.dtos.LogDTO;
-import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.logs.services.LogService;
 import com.example.siemcenter.users.dtos.UserDTO;
-import com.example.siemcenter.users.models.RiskCategory;
-import com.example.siemcenter.users.models.Role;
-import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.users.services.UserService;
 import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
@@ -34,18 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SiemCenterApplication.class)
 public class LogsTest {
-    private KieSession ksession;
+    private static KieSession ksession;
     private Logger logger = LoggerFactory.getLogger(LogsTest.class);
     @Autowired
     private LogService logService;
@@ -62,23 +51,24 @@ public class LogsTest {
     @Autowired
     private LogRepository logRepository;
     private static Integer DEVICE_NUMBER = 1;
+    private static boolean setup = false;
 
 
     @Before
     public void start() {
-        KieServices ks = KieServices.Factory.get();
-        KieContainer kc = ks.newKieClasspathContainer();
-        ksession = setUpSessionForStreamProcessingMode();
-        setGlobals();
-        createUsers();
+        if(!setup) {
+            KieServices ks = KieServices.Factory.get();
+            KieContainer kc = ks.newKieClasspathContainer();
+            ksession = setUpSessionForStreamProcessingMode();
+            setGlobals();
+            createUsers();
+            setup = true;
+        }
     }
 
     @Test
     public void insertingLogTest() {
-        assertNotNull(ksession);
-        assertNotNull(logger);
-        ksession.setGlobal("logger", logger);
-
+        long beforeInsertion = logRepository.count();
         LogDTO logDTO = LogDTO.builder()
                 .logType(LogType.WARNING)
                 .ipAddress("192.168.0.1")
@@ -92,11 +82,74 @@ public class LogsTest {
         logService.createLog(logDTO);
 
         ksession.fireAllRules();
-        long logCount = logRepository.count();
-        assertEquals(1l, logCount);
+        long afterInsertion = logRepository.count();
+        assertEquals(afterInsertion, beforeInsertion+1);
     }
 
-    private KieSession setUpSessionForStreamProcessingMode() {
+    @Test
+    public void Test1_FailedToLogInFromADeviceThatHasAlreadyFailedToLogIn() {
+        int beforeInsertion = alarmRepository.findByMessageContains("Failed to login from a device").size();
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        LogDTO log2 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        logService.createLog(log1);
+        logService.createLog(log2);
+
+        ksession.fireAllRules();
+        int afterInsertion = alarmRepository.findByMessageContains("Failed to login from a device").size();
+        assertEquals(afterInsertion, beforeInsertion+1);
+    }
+
+    @Test
+    public void Test2_FailedToLogInWithSameUsernameMultipleTimes() {
+        int beforeInsertion = alarmRepository.findByMessageContains("Multiple failed attempts to log with same username").size();
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        LogDTO log2 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Failed login attempt")
+                .build();
+
+        logService.createLog(log1);
+        logService.createLog(log2);
+
+        ksession.fireAllRules();
+        int afterInsertion = alarmRepository.findByMessageContains("Multiple failed attempts to log with same username").size();
+        assertEquals(afterInsertion, beforeInsertion+2);
+    }
+
+        private static KieSession setUpSessionForStreamProcessingMode() {
         KieServices ks = KieServices.Factory.get();
         KieContainer kc = ks.newKieClasspathContainer();
 
@@ -117,7 +170,7 @@ public class LogsTest {
     }
 
     private void createUsers() {
-
+        logger.info("CREATED");
         UserDTO skinnyPete = UserDTO.builder().username("SkinnyPete").password("12345678").build();
         UserDTO misic98 = UserDTO.builder().username("Misic98").password("12345678").build();
         UserDTO zoran55 = UserDTO.builder().username("Zoran55").password("12345678").build();
@@ -125,5 +178,6 @@ public class LogsTest {
         userService.registerANewUser(skinnyPete);
         userService.registerANewUser(misic98);
         userService.registerANewUser(zoran55);
+        setup = true;
     }
 }
