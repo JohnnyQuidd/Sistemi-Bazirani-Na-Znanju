@@ -41,21 +41,21 @@ public class AlarmServiceImpl implements AlarmService {
         alarmDTO = formatDTO(alarmDTO);
         List<Alarm> alarmList = fetchAlarms(alarmDTO);
 
-        if(!alarmDTO.getFactStatus().equals("")) {
+        if (!alarmDTO.getFactStatus().equals("")) {
             AlarmSearchDTO finalDTO = alarmDTO;
             alarmList = alarmList.stream()
                     .filter(alarm -> alarm.getFactStatus() == FactStatus.valueOf(finalDTO.getFactStatus()))
                     .collect(Collectors.toList());
         }
 
-        if(alarmDTO.getStartDate() != null) {
+        if (alarmDTO.getStartDate() != null) {
             AlarmSearchDTO finalDTO = alarmDTO;
             alarmList = alarmList.stream()
                     .filter(alarm -> alarm.getTimestamp().toLocalDate().isAfter(finalDTO.getStartDate()))
                     .collect(Collectors.toList());
         }
 
-        if(alarmDTO.getEndDate() != null) {
+        if (alarmDTO.getEndDate() != null) {
             AlarmSearchDTO finalDTO = alarmDTO;
             alarmList = alarmList.stream()
                     .filter(alarm -> alarm.getTimestamp().toLocalDate().isBefore(finalDTO.getEndDate()))
@@ -70,24 +70,22 @@ public class AlarmServiceImpl implements AlarmService {
         dto = formatFilterDTO(dto);
         List<Alarm> alarmList;
 
-        if(dto.isAlarmsPerMachine()) {
+        if (dto.isAlarmsPerMachine()) {
             alarmList = alarmRepository.findByIpAddress(dto.getChosenDevice());
-        }
-        else if (dto.isAlarmsPerSystem()) {
+        } else if (dto.isAlarmsPerSystem()) {
             alarmList = alarmRepository.findByOs(dto.getChosenSystem());
-        }
-        else {
+        } else {
             alarmList = alarmRepository.findAll();
         }
 
-        if(dto.getStartDate() != null) {
+        if (dto.getStartDate() != null) {
             AlarmFilterDTO filterDTO = dto;
             alarmList = alarmList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isAfter(filterDTO.getStartDate()))
                     .collect(Collectors.toList());
         }
 
-        if(dto.getEndDate() != null) {
+        if (dto.getEndDate() != null) {
             AlarmFilterDTO filterDTO = dto;
             alarmList = alarmList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isBefore(filterDTO.getEndDate()))
@@ -98,7 +96,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     private AlarmFilterDTO formatFilterDTO(AlarmFilterDTO dto) {
-        if(dto.getDate().equals("null")) {
+        if (dto.getDate().equals("null")) {
             return dto;
         }
         String[] date = dto.getDate().split(",");
@@ -107,7 +105,7 @@ public class AlarmServiceImpl implements AlarmService {
         Timestamp startTimestamp = new Timestamp(Long.parseLong(startString));
         LocalDate start = startTimestamp.toLocalDateTime().toLocalDate();
 
-        String endString = date[1].substring(0, date[1].length()-1);
+        String endString = date[1].substring(0, date[1].length() - 1);
         Timestamp endTimestamp = new Timestamp(Long.parseLong(endString));
         LocalDate end = endTimestamp.toLocalDateTime().toLocalDate();
 
@@ -118,7 +116,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     private AlarmSearchDTO formatDTO(AlarmSearchDTO dto) {
-        if(dto.getDate().equals("null")) {
+        if (dto.getDate().equals("null")) {
             return dto;
         }
         dto.setMessage(dto.getMessage().trim());
@@ -128,7 +126,7 @@ public class AlarmServiceImpl implements AlarmService {
         Timestamp startTimestamp = new Timestamp(Long.parseLong(startString));
         LocalDate start = startTimestamp.toLocalDateTime().toLocalDate();
 
-        String endString = date[1].substring(0, date[1].length()-1);
+        String endString = date[1].substring(0, date[1].length() - 1);
         Timestamp endTimestamp = new Timestamp(Long.parseLong(endString));
         LocalDate end = endTimestamp.toLocalDateTime().toLocalDate();
 
@@ -139,11 +137,11 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     private List<Alarm> fetchAlarms(AlarmSearchDTO dto) {
-        if(!dto.isRegex() && !dto.getMessage().equals("")) {
+        if (!dto.isRegex() && !dto.getMessage().equals("")) {
             return alarmRepository.findByMessageContains(dto.getMessage());
         }
 
-        if(dto.isRegex() && !dto.getMessage().equals("")) {
+        if (dto.isRegex() && !dto.getMessage().equals("")) {
             return ruleService.fetchAlarmsByRegex(dto.getMessage());
         }
 

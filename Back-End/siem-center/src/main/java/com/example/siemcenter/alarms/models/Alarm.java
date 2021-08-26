@@ -3,7 +3,6 @@ package com.example.siemcenter.alarms.models;
 import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.users.models.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

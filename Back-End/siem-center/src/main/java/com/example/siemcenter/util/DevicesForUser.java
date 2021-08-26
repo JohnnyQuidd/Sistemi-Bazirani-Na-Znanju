@@ -21,8 +21,8 @@ public class DevicesForUser {
         List<Log> logList = logRepository.findByUser_Username(username);
         List<String> devices = new LinkedList<>();
 
-        for(Log log : logList) {
-            if(!devices.contains(log.getDevice().getIpAddress())) {
+        for (Log log : logList) {
+            if (!devices.contains(log.getDevice().getIpAddress())) {
                 devices.add(log.getDevice().getIpAddress());
             }
         }

@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class RuleServiceImpl implements RuleService {
+    private static Integer DEVICE_NUMBER = 1;
     private Logger logger = LoggerFactory.getLogger(RuleServiceImpl.class);
     private RuleRepository ruleRepository;
     private KieSession session;
@@ -43,7 +44,6 @@ public class RuleServiceImpl implements RuleService {
     private AlarmRepository alarmRepository;
     private UserRepository userRepository;
     private DevicesForUser devicesForUser;
-    private static Integer DEVICE_NUMBER = 1;
 
 
     @Autowired
@@ -134,9 +134,9 @@ public class RuleServiceImpl implements RuleService {
     private List<User> fetchUsersForRule(int ruleNumber) {
         List<UserTrait> users = new LinkedList<>();
         QueryResults userResults = session.getQueryResults("fetchUsersForReportCreation");
-        for(QueryResultsRow singleRow : userResults) {
+        for (QueryResultsRow singleRow : userResults) {
             UserTrait trait = (UserTrait) singleRow.get("$user");
-            if(trait.getRuleTriggered().equals("#" + ruleNumber)) {
+            if (trait.getRuleTriggered().equals("#" + ruleNumber)) {
                 users.add(trait);
             }
         }
@@ -147,7 +147,7 @@ public class RuleServiceImpl implements RuleService {
     public List<Log> fetchLogsByRegex(String regex) {
         List<Log> logList = new LinkedList<>();
         QueryResults logResults = session.getQueryResults("fetchLogsByRegex", regex);
-        for(QueryResultsRow singleRow : logResults) {
+        for (QueryResultsRow singleRow : logResults) {
             logList.add((Log) singleRow.get("$regexLogs"));
         }
         return logList;
@@ -157,7 +157,7 @@ public class RuleServiceImpl implements RuleService {
     public List<Alarm> fetchAlarmsByRegex(String regex) {
         List<Alarm> alarmList = new LinkedList<>();
         QueryResults logResults = session.getQueryResults("fetchAlarmsByRegex", regex);
-        for(QueryResultsRow singleRow : logResults) {
+        for (QueryResultsRow singleRow : logResults) {
             alarmList.add((Alarm) singleRow.get("$regexAlarms"));
         }
         return alarmList;
@@ -189,16 +189,16 @@ public class RuleServiceImpl implements RuleService {
                 .collect(Collectors.toList());
     }
 
-    private KieSession createKieSessionFromDRL(String drl){
+    private KieSession createKieSessionFromDRL(String drl) {
         KieHelper kieHelper = new KieHelper();
         kieHelper.addContent(drl, ResourceType.DRL);
 
         Results results = kieHelper.verify();
 
-        if (results.hasMessages(Message.Level.WARNING, Message.Level.ERROR)){
+        if (results.hasMessages(Message.Level.WARNING, Message.Level.ERROR)) {
             List<Message> messages = results.getMessages(Message.Level.WARNING, Message.Level.ERROR);
             for (Message message : messages) {
-                System.out.println("Error: "+message.getText());
+                System.out.println("Error: " + message.getText());
             }
 
             throw new IllegalStateException("Compilation errors were found. Check the logs.");

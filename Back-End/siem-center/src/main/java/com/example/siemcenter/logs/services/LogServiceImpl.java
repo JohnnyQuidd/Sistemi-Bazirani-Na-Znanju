@@ -25,7 +25,9 @@ import javax.validation.Valid;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,28 +91,28 @@ public class LogServiceImpl implements LogService {
         logDTO = formatDTO(logDTO);
         List<Log> logList = fetchLogs(logDTO);
 
-        if(!logDTO.getLogType().equals("")) {
+        if (!logDTO.getLogType().equals("")) {
             LogSearchDTO finalLogDTO = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getLogType() == LogType.valueOf(finalLogDTO.getLogType()))
                     .collect(Collectors.toList());
         }
 
-        if(!logDTO.getFactStatus().equals("")) {
+        if (!logDTO.getFactStatus().equals("")) {
             LogSearchDTO finalLogDTO1 = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getFactStatus() == FactStatus.valueOf(finalLogDTO1.getFactStatus()))
                     .collect(Collectors.toList());
         }
 
-        if(logDTO.getStartDate() != null) {
+        if (logDTO.getStartDate() != null) {
             LogSearchDTO finalLogDTO2 = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isAfter(finalLogDTO2.getStartDate()))
                     .collect(Collectors.toList());
         }
 
-        if(logDTO.getEndDate() != null) {
+        if (logDTO.getEndDate() != null) {
             LogSearchDTO finalLogDTO3 = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isBefore(finalLogDTO3.getEndDate()))
@@ -124,24 +126,22 @@ public class LogServiceImpl implements LogService {
     public List<Log> filterLogs(LogFilterDTO logDTO) {
         logDTO = formatFilterDTO(logDTO);
         List<Log> logList;
-        if(logDTO.isLogsPerMachine()) {
+        if (logDTO.isLogsPerMachine()) {
             logList = logRepository.findByDevice_IpAddress(logDTO.getChosenDevice());
-        }
-        else if (logDTO.isLogsPerSystem()) {
+        } else if (logDTO.isLogsPerSystem()) {
             logList = logRepository.findByOs_Name(logDTO.getChosenSystem());
-        }
-        else {
+        } else {
             logList = logRepository.findAll();
         }
 
-        if(logDTO.getStartDate() != null) {
+        if (logDTO.getStartDate() != null) {
             LogFilterDTO finalLogDTO2 = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isAfter(finalLogDTO2.getStartDate()))
                     .collect(Collectors.toList());
         }
 
-        if(logDTO.getEndDate() != null) {
+        if (logDTO.getEndDate() != null) {
             LogFilterDTO finalLogDTO3 = logDTO;
             logList = logList.stream()
                     .filter(log -> log.getTimestamp().toLocalDate().isBefore(finalLogDTO3.getEndDate()))
@@ -152,7 +152,7 @@ public class LogServiceImpl implements LogService {
     }
 
     private LogFilterDTO formatFilterDTO(LogFilterDTO dto) {
-        if(dto.getDate().equals("null")) {
+        if (dto.getDate().equals("null")) {
             return dto;
         }
         String[] date = dto.getDate().split(",");
@@ -161,7 +161,7 @@ public class LogServiceImpl implements LogService {
         Timestamp startTimestamp = new Timestamp(Long.parseLong(startString));
         LocalDate start = startTimestamp.toLocalDateTime().toLocalDate();
 
-        String endString = date[1].substring(0, date[1].length()-1);
+        String endString = date[1].substring(0, date[1].length() - 1);
         Timestamp endTimestamp = new Timestamp(Long.parseLong(endString));
         LocalDate end = endTimestamp.toLocalDateTime().toLocalDate();
 
@@ -172,8 +172,8 @@ public class LogServiceImpl implements LogService {
     }
 
     private LogSearchDTO formatDTO(LogSearchDTO dto) {
-        if(dto.getDate().equals("null")) {
-          return dto;
+        if (dto.getDate().equals("null")) {
+            return dto;
         }
         dto.setMessage(dto.getMessage().trim());
         String[] date = dto.getDate().split(",");
@@ -182,7 +182,7 @@ public class LogServiceImpl implements LogService {
         Timestamp startTimestamp = new Timestamp(Long.parseLong(startString));
         LocalDate start = startTimestamp.toLocalDateTime().toLocalDate();
 
-        String endString = date[1].substring(0, date[1].length()-1);
+        String endString = date[1].substring(0, date[1].length() - 1);
         Timestamp endTimestamp = new Timestamp(Long.parseLong(endString));
         LocalDate end = endTimestamp.toLocalDateTime().toLocalDate();
 
@@ -193,10 +193,10 @@ public class LogServiceImpl implements LogService {
     }
 
     private List<Log> fetchLogs(LogSearchDTO logDTO) {
-        if(!logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+        if (!logDTO.isRegex() && !logDTO.getMessage().equals("")) {
             return logRepository.findByMessageContains(logDTO.getMessage());
         }
-        if(logDTO.isRegex() && !logDTO.getMessage().equals("")) {
+        if (logDTO.isRegex() && !logDTO.getMessage().equals("")) {
             // TODO: Fetch from repository instead
             return ruleService.fetchLogsByRegex(logDTO.getMessage());
         }
