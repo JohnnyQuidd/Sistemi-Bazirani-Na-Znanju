@@ -289,6 +289,251 @@ public class LogsTest {
         assertEquals(beforeInsertion+1, afterInsertion);
     }
 
+    @Test
+    public void Test8_Same_Device_Different_Accounts_Login_Successful() {
+        int beforeInsertion = fetchAlarmNumberByNameContains("Successful login to a system followed by a user information changed");
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log2 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log3 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log4 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log5 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log6 = LogDTO.builder()
+                .logType(LogType.ERROR)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login failed")
+                .build();
+
+        LogDTO log7 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Login successful")
+                .build();
+
+        LogDTO log8 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.3.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("User data changed successfully")
+                .build();
+
+        logService.createLog(log1);
+        logService.createLog(log2);
+        logService.createLog(log3);
+        logService.createLog(log4);
+        logService.createLog(log5);
+        logService.createLog(log6);
+        logService.createLog(log7);
+        logService.createLog(log8);
+
+        ksession.fireAllRules();
+
+        int afterInsertion = fetchAlarmNumberByNameContains("Successful login to a system followed by a user information changed");
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
+    @Test
+    public void Test9_7_Or_More_Threats_From_Same_Device() {
+        int beforeInsertion = fetchAlarmNumberByNameContains("Over 10 days 7 or more threats detected from the same device");
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log2 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log3 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log4 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log5 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log6 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log7 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        LogDTO log8 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.0.1")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Antivirus detected threat")
+                .build();
+
+        logService.createLog(log1);
+        logService.createLog(log2);
+        logService.createLog(log3);
+        logService.createLog(log4);
+        logService.createLog(log5);
+        logService.createLog(log6);
+        logService.createLog(log7);
+        logService.createLog(log8);
+        ksession.fireAllRules();
+
+        int afterInsertion = fetchAlarmNumberByNameContains("Over 10 days 7 or more threats detected from the same device");
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
+    @Test
+    public void Test10_LoginAttemptFromMaliciousDevice() {
+        int beforeInsertion = fetchAlarmNumberByNameContains("Login attempt from malicious device, regardless being successful or not");
+
+        Device device = Device.builder().ipAddress("192.168.2.5").isMalicious(true).build();
+        deviceRepository.save(device);
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.2.5")
+                .operatingSystem("Windows")
+                .software("Adobe XD")
+                .username("SkinnyPete")
+                .timestamp(LocalDateTime.now())
+                .message("Login successful")
+                .build();
+
+        logService.createLog(log1);
+        ksession.fireAllRules();
+
+        int afterInsertion = fetchAlarmNumberByNameContains("Login attempt from malicious device, regardless being successful or not");
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
+    @Test
+    public void Test10_Log_Detected_From_Malicious_Device() {
+        int beforeInsertion = fetchAlarmNumberByNameContains("Log detected from malicious device");
+
+        Device device = Device.builder().ipAddress("192.168.5.5").isMalicious(true).build();
+        deviceRepository.save(device);
+
+        LogDTO log1 = LogDTO.builder()
+                .logType(LogType.INFORMATION)
+                .ipAddress("192.168.5.5")
+                .operatingSystem("Linux")
+                .software("Powerpoint")
+                .username("Misic98")
+                .timestamp(LocalDateTime.now())
+                .message("Starting program")
+                .build();
+
+        logService.createLog(log1);
+        ksession.fireAllRules();
+
+        int afterInsertion = fetchAlarmNumberByNameContains("Log detected from malicious device");
+        assertEquals(beforeInsertion+1, afterInsertion);
+    }
+
 
     private static KieSession setUpSessionForStreamProcessingMode() {
         KieServices ks = KieServices.Factory.get();

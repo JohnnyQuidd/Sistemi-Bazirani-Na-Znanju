@@ -1,6 +1,7 @@
 package com.example.siemcenter.common.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Device implements Comparable<Device> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

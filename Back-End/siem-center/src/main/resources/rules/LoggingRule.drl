@@ -206,7 +206,6 @@ rule "#6 Successful logins from same user from different devices in a time span 
         logger.info("User logged in from different devices in a time span less than 10 seconds");
 end
 
-// TODO: add some additional time so the rule doesn't trigger immediately upon log insertion
 rule "#7 Threat registered by antivirus is not dealt with in an hour from time of detection" salience 5
     when
         $log1: Log(message.toLowerCase() contains "antivirus detected threat")
@@ -233,7 +232,7 @@ end
 // If in last 90 seconds were 5 or more failed logins from same device to different accounts
 rule "#8 Successful login to a system followed by a user information changed" salience 5
     when
-        $log1: Log(message.toLowerCase() contains "User data changed",
+        $log1: Log(message.toLowerCase() contains "user data changed",
                    logType == LogType.INFORMATION
         )
         $log2: Log(this != $log1,
@@ -280,10 +279,10 @@ rule "#9 Over 10 days 7 or more threats detected from the same device" salience 
                     logType == LogType.ERROR
                     || logType == LogType.WARNING
         )
-        $logs: List(size >= 10) from collect (
+        $logs: List(size >= 7) from collect (
             $log: Log(this != $log1,
                       device.getIpAddress() == $ipAddress,
-                      message.toLowerCase() contains "Antivirus detected threat",
+                      message.toLowerCase() contains "antivirus detected threat",
                       timestamp.isAfter($log1.getTimestamp().minusDays(10))
             )
         )
@@ -317,8 +316,7 @@ rule "#10 Login attempt from malicious device, regardless being successful or no
         $log: Log(message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
                   || message.toLowerCase() contains "log-in",
-                  $ip: device.getIpAddress())
-        $device: Device(malicious == true) from deviceRepository.findByIpAddress($ip).orElse(null)
+                  device.isMalicious())
     then
         Alarm $newAlarm = new Alarm();
         $newAlarm.setMessage("Login attempt from malicious device, regardless being successful or not");
@@ -331,6 +329,7 @@ rule "#10 Login attempt from malicious device, regardless being successful or no
 
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
+        alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("#10 Login attempt from malicious device, regardless being successful or not");
 end
@@ -351,6 +350,7 @@ rule "#11 Log detected from malicious device" salience 5
 
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
+        alarmRepository.save($newAlarm);
         insert($newAlarm);
         logger.info("#11 Log detected from malicious device");
 end
