@@ -209,11 +209,8 @@ end
 // TODO: add some additional time so the rule doesn't trigger immediately upon log insertion
 rule "#7 Threat registered by antivirus is not dealt with in an hour from time of detection" salience 5
     when
-        $log1: Log(message.toLowerCase() contains "Antivirus detected threat")
-        not ( Log(message.toLowerCase() contains "Antivirus eliminated threat",
-                            timestamp.isBefore($log1.getTimestamp().plusHours(1))
-                            && timestamp.isAfter($log1.getTimestamp().plusSeconds(5))
-                          )
+        $log1: Log(message.toLowerCase() contains "antivirus detected threat")
+        not ( Log(message.toLowerCase() contains "antivirus eliminated threat")
             )
     then
         Alarm $newAlarm = new Alarm();
