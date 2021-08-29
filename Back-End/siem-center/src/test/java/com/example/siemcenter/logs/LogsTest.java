@@ -492,6 +492,8 @@ public class LogsTest {
                 .message("Login successful")
                 .build();
 
+        Device savedDevice = deviceRepository.findByIpAddress("192.168.2.5").orElse(null);
+        assertEquals(true, savedDevice.isMalicious());
         logService.createLog(log1);
 
         int afterInsertion = fetchAlarmNumberByNameContains("Login attempt from malicious device, regardless being successful or not");

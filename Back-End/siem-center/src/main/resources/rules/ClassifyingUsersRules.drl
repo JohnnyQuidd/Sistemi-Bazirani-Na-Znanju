@@ -22,11 +22,12 @@ global DeviceRepository deviceRepository;
 global UserRepository userRepository;
 
 
-rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 5
+rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 100
+    lock-on-active true
     when
         $user: User() from userRepository.findAllUsers()
         not(
-            Alarm(relatedUsers contains $user )
+            Alarm(relatedUsers contains $user)
             over window:time(90d)
         )
     then
@@ -36,6 +37,7 @@ rule "#15 Low risk category user is not associated with any alarm in past 90 day
 end
 
 rule "#16 Moderate risk category if user has triggered an antivirus alarm in past 6 months" salience 5
+    lock-on-active true
     when
         $user: User() from userRepository.findAllUsers()
         $alarm: Alarm(relatedUsers contains $user,
@@ -50,6 +52,7 @@ rule "#16 Moderate risk category if user has triggered an antivirus alarm in pas
 end
 
 rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
+    lock-on-active true
     when
         Log($user: user, message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
@@ -71,6 +74,7 @@ rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
 end
 
 rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
+    lock-on-active true
     when
         $user: User() from userRepository.findAllAdmins()
         Alarm(relatedUsers contains $user) over window:time(30d)
@@ -81,6 +85,7 @@ rule "#18 High risk category because Admin has triggered an alarm in past 30 day
 end
 
 rule "#19 High risk if admin failed 2 times to log in following by successful login before or after his shift" salience 5
+    lock-on-active true
     when
         $admin: User() from userRepository.findAllAdmins()
         $scflLog: Log(user == $admin,
@@ -107,7 +112,8 @@ rule "#19 High risk if admin failed 2 times to log in following by successful lo
        logger.info("#19 Admin " + $admin.getUsername() + " has gotten a HIGH risk category" );
 end
 
-rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 5
+rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 10
+    lock-on-active true
     when
         $device: Device(malicious == true) from deviceRepository.findAll()
         $log: Log($user: user,
@@ -123,6 +129,7 @@ rule "#20 Extreme risk category if an account has login attempt from malicious d
 end
 
 rule "#21 Extreme risk category for user has been associated with antivirus in last 6 months" salience 5
+    lock-on-active true
     when
         $user: User() from userRepository.findAll()
         Number(intValue >= 1) from accumulate (

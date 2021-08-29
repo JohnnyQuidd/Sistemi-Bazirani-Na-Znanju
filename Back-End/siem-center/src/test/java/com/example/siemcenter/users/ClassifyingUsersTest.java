@@ -3,10 +3,16 @@ package com.example.siemcenter.users;
 import com.example.siemcenter.SiemCenterApplication;
 import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
+import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.common.models.OperatingSystem;
+import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.repositories.OperatingSystemRepository;
+import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.LogsTest;
 import com.example.siemcenter.logs.dtos.LogDTO;
+import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.logs.services.LogService;
@@ -37,6 +43,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -60,6 +68,10 @@ public class ClassifyingUsersTest {
     private DevicesForUser devicesForUser;
     @Autowired
     private LogRepository logRepository;
+    @Autowired
+    private OperatingSystemRepository osRepo;
+    @Autowired
+    private SoftwareRepository softwareRepository;
     @Autowired
     private RuleService ruleService;
     private static Integer DEVICE_NUMBER = 1;
@@ -208,7 +220,40 @@ public class ClassifyingUsersTest {
         User updatedAdmin = userRepository.findByUsername("SuperAdmin").orElse(null);
         assertEquals(RiskCategory.HIGH, updatedAdmin.getRiskCategory());
     }
-    
+
+    // TODO: Should be EXTREME, not LOW
+    @Test
+    public void Test20_Login_Attempt_From_Malicious_Device() {
+        User jane = userRepository.findByUsername("Jane1970").orElse(null);
+        assertEquals(RiskCategory.LOW, jane.getRiskCategory());
+
+        Device device = Device.builder().ipAddress("192.168.2.5").isMalicious(true).build();
+        deviceRepository.save(device);
+        OperatingSystem os = new OperatingSystem("Ubuntu");
+        osRepo.save(os);
+        Software software = new Software("Adobe");
+        softwareRepository.save(software);
+
+        Log log = Log.builder()
+                .uuid(UUID.randomUUID())
+                .logType(LogType.INFORMATION)
+                .factStatus(FactStatus.ACTIVE)
+                ._timestamp(new Date())
+                .device(device)
+                .os(os)
+                .software(software)
+                .user(jane)
+                .timestamp(LocalDateTime.now())
+                .message("Successful login")
+                .build();
+
+        logRepository.save(log);
+        ruleService.insertLog(log);
+        ksession.fireAllRules();
+
+        User updatedJane = userRepository.findByUsername("Jane1970").orElse(null);
+        assertEquals(RiskCategory.EXTREME, updatedJane.getRiskCategory());
+    }
 
     private static KieSession setUpSessionForStreamProcessingMode() {
         KieServices ks = KieServices.Factory.get();
