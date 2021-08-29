@@ -13,6 +13,7 @@ import com.example.siemcenter.logs.services.LogService;
 import com.example.siemcenter.rules.services.RuleService;
 import com.example.siemcenter.users.dtos.UserDTO;
 import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.models.Role;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.users.services.UserService;
@@ -144,6 +145,71 @@ public class ClassifyingUsersTest {
         assertEquals(RiskCategory.MODERATE, updatedUser.getRiskCategory());
     }
 
+    @Test
+    public void Test17_Moderate_If_15_Failed_Login_Attempts() {
+        User user = userRepository.findByUsername("John1960").orElse(null);
+        assertEquals(RiskCategory.LOW, user.getRiskCategory());
+
+        for(int i=0; i<15; i++) {
+            LogDTO logDTO = LogDTO.builder().logType(LogType.ERROR).ipAddress("192.168.0.1").operatingSystem("Windows 10")
+                .software("Adobe XD").username("John1960").timestamp(LocalDateTime.now()).message("Failed login attempt").build();
+            logService.createLog(logDTO);
+        }
+
+        LogDTO log = LogDTO.builder().logType(LogType.INFORMATION).ipAddress("192.168.0.1").operatingSystem("Windows 10")
+                .software("Adobe XD").username("John1960").timestamp(LocalDateTime.now()).message("Successful login attempt").build();
+        logService.createLog(log);
+
+        User john = userRepository.findByUsername("John1960").orElse(null);
+        assertEquals(RiskCategory.MODERATE, john.getRiskCategory());
+    }
+
+    @Test
+    public void Test18_Admin_Triggered_Alarm_In_Past_30_Days() {
+        User user = userRepository.findByUsername("admin").orElse(null);
+        assertEquals(RiskCategory.LOW, user.getRiskCategory());
+
+        Alarm alarm = Alarm.builder()
+                .message("threat detected")
+                .factStatus(FactStatus.ACTIVE)
+                .os("Windows 10")
+                .ipAddress("192.168.0.1")
+                .relatedUsers(Arrays.asList(user))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        ruleService.insertAlarm(alarm);
+
+        User updatedAdmin = userRepository.findByUsername("admin").orElse(null);
+        assertEquals(RiskCategory.HIGH, updatedAdmin.getRiskCategory());
+    }
+
+    @Test
+    public void Test19_Admin_Successful_Login_After_Failed_Login() {
+        User admin = userRepository.findByUsername("SuperAdmin").orElse(null);
+        assertEquals(RiskCategory.LOW, admin.getRiskCategory());
+
+        LogDTO logFailed1 = LogDTO.builder().logType(LogType.ERROR).ipAddress("192.168.0.1").operatingSystem("Windows 10")
+                .software("Adobe XD").username("SuperAdmin").timestamp(LocalDateTime.of(2021, 9, 10, 20,0))
+                .message("Failed login attempt").build();
+
+        LogDTO logFailed2 = LogDTO.builder().logType(LogType.ERROR).ipAddress("192.168.0.1").operatingSystem("Windows 10")
+                .software("Adobe XD").username("SuperAdmin").timestamp(LocalDateTime.of(2021, 9, 10, 20,0))
+                .message("Failed login attempt").build();
+
+        LogDTO log = LogDTO.builder().logType(LogType.INFORMATION).ipAddress("192.168.0.1").operatingSystem("Windows 10")
+                .software("Adobe XD").username("SuperAdmin").timestamp(LocalDateTime.of(2021, 9, 10, 20,0))
+                .message("Successful login attempt").build();
+
+
+        logService.createLog(logFailed1);
+        logService.createLog(logFailed2);
+        logService.createLog(log);
+        User updatedAdmin = userRepository.findByUsername("SuperAdmin").orElse(null);
+        assertEquals(RiskCategory.HIGH, updatedAdmin.getRiskCategory());
+    }
+    
+
     private static KieSession setUpSessionForStreamProcessingMode() {
         KieServices ks = KieServices.Factory.get();
         KieContainer kc = ks.newKieClasspathContainer();
@@ -169,10 +235,31 @@ public class ClassifyingUsersTest {
         UserDTO skinnyPete = UserDTO.builder().username("SkinnyPete").password("12345678").build();
         UserDTO misic98 = UserDTO.builder().username("Misic98").password("12345678").build();
         UserDTO zoran55 = UserDTO.builder().username("Zoran55").password("12345678").build();
+        UserDTO john = UserDTO.builder().username("John1960").password("12345678").build();
+        UserDTO jane = UserDTO.builder().username("Jane1970").password("12345678").build();
+        UserDTO zack = UserDTO.builder().username("Zach1980").password("12345678").build();
+
 
         userService.registerANewUser(skinnyPete);
         userService.registerANewUser(misic98);
         userService.registerANewUser(zoran55);
+        userService.registerANewUser(john);
+        userService.registerANewUser(jane);
+        userService.registerANewUser(zack);
+
+        User admin = User.builder().username("admin").password("12345678").riskCategory(RiskCategory.LOW)
+                .role(Role.ADMIN)
+                .lastTimeUserWasActive(LocalDateTime.now())
+                .build();
+        userRepository.save(admin);
+
+        User superAdmin = User.builder().username("SuperAdmin").password("12345678").riskCategory(RiskCategory.LOW)
+                .role(Role.ADMIN)
+                .lastTimeUserWasActive(LocalDateTime.now())
+                .build();
+        userRepository.save(superAdmin);
+
+
         setup = true;
     }
 }

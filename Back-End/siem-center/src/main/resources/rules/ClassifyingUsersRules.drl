@@ -70,11 +70,9 @@ rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
        logger.info("#17 User " + $user.getUsername() + " has gotten a MODERATE risk category" );
 end
 
-// TODO: Check if condition makes sense
 rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
     when
-        $log: Log($logUser: user)
-        $user: User(username == $logUser.getUsername()) from userRepository.findAllAdmins()
+        $user: User() from userRepository.findAllAdmins()
         Alarm(relatedUsers contains $user) over window:time(30d)
     then
        $user.setRiskCategory(RiskCategory.HIGH);
@@ -128,7 +126,7 @@ rule "#21 Extreme risk category for user has been associated with antivirus in l
     when
         $user: User() from userRepository.findAll()
         Number(intValue >= 1) from accumulate (
-            $alarm: Alarm(relatedUsers contains $user)
+            $alarm: Alarm(relatedUsers contains $user, message contains "threat detected")
             over window:time(180d), count($alarm)
         )
         $log: Log(message.toLowerCase() contains "login"
