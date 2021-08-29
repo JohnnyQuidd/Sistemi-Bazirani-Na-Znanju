@@ -94,7 +94,6 @@ public class LogsTest {
         long beforeInsertion = logRepository.count();
         logService.createLog(logDTO);
 
-        ksession.fireAllRules();
         long afterInsertion = logRepository.count();
         assertEquals(beforeInsertion+1, afterInsertion);
     }
@@ -125,7 +124,6 @@ public class LogsTest {
         logService.createLog(log1);
         logService.createLog(log2);
 
-        ksession.fireAllRules();
         int afterInsertion = fetchAlarmNumberByNameContains("Failed to login from a device");
         assertEquals(beforeInsertion+2, afterInsertion);
     }
@@ -155,7 +153,6 @@ public class LogsTest {
 
         logService.createLog(log1);
         logService.createLog(log2);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Multiple failed attempts to log with same username");
         assertEquals(beforeInsertion+3, afterInsertion);
@@ -175,7 +172,6 @@ public class LogsTest {
                 .build();
 
         logService.createLog(log1);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Log with type ERROR occurred");
         assertEquals(beforeInsertion+1, afterInsertion);
@@ -198,7 +194,6 @@ public class LogsTest {
                 .build();
 
         logService.createLog(log1);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("User tried to log in an account that was inactive for 90 days or more");
         assertEquals(beforeInsertion+1, afterInsertion);
@@ -230,7 +225,6 @@ public class LogsTest {
 
         logService.createLog(log1);
         logService.createLog(log2);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("User logged in from different devices in a time span less than 10 seconds");
         assertEquals(beforeInsertion+2, afterInsertion);
@@ -262,7 +256,6 @@ public class LogsTest {
 
         logService.createLog(log1);
         logService.createLog(log2);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("User logged in from different devices in a time span less than 10 seconds");
         assertEquals(beforeInsertion, afterInsertion);
@@ -283,7 +276,6 @@ public class LogsTest {
                 .build();
 
         logService.createLog(log1);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Threat registered by antivirus is not dealt with in an hour from time of detection");
         assertEquals(beforeInsertion+1, afterInsertion);
@@ -382,8 +374,6 @@ public class LogsTest {
         logService.createLog(log7);
         logService.createLog(log8);
 
-        ksession.fireAllRules();
-
         int afterInsertion = fetchAlarmNumberByNameContains("Successful login to a system followed by a user information changed");
         assertEquals(beforeInsertion+1, afterInsertion);
     }
@@ -480,7 +470,6 @@ public class LogsTest {
         logService.createLog(log6);
         logService.createLog(log7);
         logService.createLog(log8);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Over 10 days 7 or more threats detected from the same device");
         assertEquals(beforeInsertion+1, afterInsertion);
@@ -504,7 +493,6 @@ public class LogsTest {
                 .build();
 
         logService.createLog(log1);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Login attempt from malicious device, regardless being successful or not");
         assertEquals(beforeInsertion+1, afterInsertion);
@@ -528,7 +516,6 @@ public class LogsTest {
                 .build();
 
         logService.createLog(log1);
-        ksession.fireAllRules();
 
         int afterInsertion = fetchAlarmNumberByNameContains("Log detected from malicious device");
         assertEquals(beforeInsertion+1, afterInsertion);

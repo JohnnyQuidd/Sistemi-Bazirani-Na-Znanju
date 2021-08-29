@@ -86,6 +86,12 @@ public class RuleServiceImpl implements RuleService {
     }
 
     @Override
+    public void insertAlarm(Alarm alarm) {
+        session.insert(alarm);
+        session.fireAllRules();
+    }
+
+    @Override
     public List<Log> getLogs() {
         List<Log> logs = new LinkedList<>();
         QueryResults allLogs = this.session.getQueryResults("fetchAllLogs");

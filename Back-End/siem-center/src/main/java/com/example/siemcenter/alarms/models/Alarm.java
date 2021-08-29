@@ -4,6 +4,7 @@ import com.example.siemcenter.common.models.FactStatus;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.users.models.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.kie.api.definition.type.Role;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Role(Role.Type.EVENT)
 public class Alarm {
     @Id

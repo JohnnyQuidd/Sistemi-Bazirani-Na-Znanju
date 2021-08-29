@@ -13,16 +13,18 @@ import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.models.RiskCategory;
 import com.example.siemcenter.users.repositories.UserRepository;
+import com.example.siemcenter.alarms.repositories.AlarmRepository;
+
 
 global Logger logger;
+global AlarmRepository alarmRepository;
 global DeviceRepository deviceRepository;
 global UserRepository userRepository;
 
 
 rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 5
     when
-        $log: Log($username: user.getUsername())
-        $user: User(username == $username) from userRepository.findAllUsers();
+        $user: User() from userRepository.findAllUsers()
         not(
             Alarm(relatedUsers contains $user )
             over window:time(90d)
@@ -35,7 +37,7 @@ end
 
 rule "#16 Moderate risk category if user has triggered an antivirus alarm in past 6 months" salience 5
     when
-        $log: Log($user: user)
+        $user: User() from userRepository.findAllUsers()
         $alarm: Alarm(relatedUsers contains $user,
                 message.toLowerCase() contains "antivirus"
                 || message.toLowerCase() contains "threat detected"

@@ -10,6 +10,8 @@ import java.util.List;
 public interface RuleService {
     void insertLog(Log log);
 
+    void insertAlarm(Alarm alarm);
+
     List<Log> getLogs();
 
     List<Alarm> getAlarms();
