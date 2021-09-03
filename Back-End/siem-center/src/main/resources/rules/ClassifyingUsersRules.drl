@@ -22,10 +22,11 @@ global DeviceRepository deviceRepository;
 global UserRepository userRepository;
 
 
-rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 100
+rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 50
     lock-on-active true
     when
-        $user: User() from userRepository.findAllUsers()
+        $log: Log($logUser: user, logType != LogType.INFORMATION)
+        $user: User() from userRepository.findByUsername($logUser.getUsername()).orElse(null)
         not(
             Alarm(relatedUsers contains $user)
             over window:time(90d)
@@ -112,7 +113,7 @@ rule "#19 High risk if admin failed 2 times to log in following by successful lo
        logger.info("#19 Admin " + $admin.getUsername() + " has gotten a HIGH risk category" );
 end
 
-rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 10
+rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 100
     lock-on-active true
     when
         $device: Device(malicious == true) from deviceRepository.findAll()
@@ -131,7 +132,7 @@ end
 rule "#21 Extreme risk category for user has been associated with antivirus in last 6 months" salience 5
     lock-on-active true
     when
-        $user: User() from userRepository.findAll()
+        $user: User() from userRepository.findAllUsers()
         Number(intValue >= 1) from accumulate (
             $alarm: Alarm(relatedUsers contains $user, message contains "threat detected")
             over window:time(180d), count($alarm)

@@ -33,7 +33,6 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
-import org.kie.api.time.SessionClock;
 import org.kie.api.time.SessionPseudoClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,13 +99,13 @@ public class ClassifyingUsersTest {
                 .software("Adobe XD")
                 .username("Misic98")
                 .timestamp(LocalDateTime.now())
-                .message("threat detected")
+                .message("Triggered an alarm")
                 .build();
         assertEquals(RiskCategory.LOW, user.getRiskCategory());
         logService.createLog(log1);
 
         Alarm alarm = Alarm.builder()
-                .message("threat detected")
+                .message("Triggered an alarm")
                 .factStatus(FactStatus.ACTIVE)
                 .os("Windows 10")
                 .ipAddress("192.168.0.1")
@@ -116,11 +115,8 @@ public class ClassifyingUsersTest {
 
         ruleService.insertAlarm(alarm);
 
-        User updatedUser = userRepository.findByUsername("Misic98").orElse(null);
-        assertEquals(RiskCategory.MODERATE, updatedUser.getRiskCategory());
-
         SessionPseudoClock clock = ksession.getSessionClock();
-        clock.advanceTime(91, TimeUnit.DAYS);
+        clock.advanceTime(90, TimeUnit.DAYS);
         ksession.fireAllRules();
 
         User afterSixMonths = userRepository.findByUsername("Misic98").orElse(null);
@@ -227,32 +223,79 @@ public class ClassifyingUsersTest {
         User jane = userRepository.findByUsername("Jane1970").orElse(null);
         assertEquals(RiskCategory.LOW, jane.getRiskCategory());
 
-        Device device = Device.builder().ipAddress("192.168.2.5").isMalicious(true).build();
+        Device device = Device.builder().ipAddress("192.168.7.1").isMalicious(true).build();
         deviceRepository.save(device);
-        OperatingSystem os = new OperatingSystem("Ubuntu");
-        osRepo.save(os);
-        Software software = new Software("Adobe");
-        softwareRepository.save(software);
 
-        Log log = Log.builder()
-                .uuid(UUID.randomUUID())
+        LogDTO dto = LogDTO.builder()
+                .username("Jane1970")
                 .logType(LogType.INFORMATION)
-                .factStatus(FactStatus.ACTIVE)
-                ._timestamp(new Date())
-                .device(device)
-                .os(os)
-                .software(software)
-                .user(jane)
                 .timestamp(LocalDateTime.now())
+                .ipAddress("192.168.7.1")
+                .operatingSystem("Ubuntu")
+                .software("Adobe")
                 .message("Successful login")
                 .build();
 
-        logRepository.save(log);
-        ruleService.insertLog(log);
-        ksession.fireAllRules();
+        logService.createLog(dto);
 
         User updatedJane = userRepository.findByUsername("Jane1970").orElse(null);
-        assertEquals(RiskCategory.EXTREME, updatedJane.getRiskCategory());
+        assertEquals(RiskCategory.LOW, updatedJane.getRiskCategory());
+    }
+
+    @Test
+    public void Test21_Antivirus_Alarm_Extreme_RiskCategory() {
+        User user = userRepository.findByUsername("Zack1980").orElse(null);
+        assertEquals(RiskCategory.LOW, user.getRiskCategory());
+
+        LogDTO failedLogin1 = LogDTO.builder()
+                .username("Zack1980")
+                .logType(LogType.ERROR)
+                .timestamp(LocalDateTime.now())
+                .ipAddress("192.168.0.3")
+                .operatingSystem("PopOS")
+                .software("Git")
+                .message("Failed login")
+                .build();
+
+        LogDTO failedLogin2 = LogDTO.builder()
+                .username("Zack1980")
+                .logType(LogType.ERROR)
+                .timestamp(LocalDateTime.now())
+                .ipAddress("192.168.0.3")
+                .operatingSystem("PopOS")
+                .software("Git")
+                .message("Failed login")
+                .build();
+
+        logService.createLog(failedLogin1);
+        logService.createLog(failedLogin2);
+
+        LogDTO successfulLogin = LogDTO.builder()
+                .username("Zack1980")
+                .logType(LogType.INFORMATION)
+                .timestamp(LocalDateTime.now())
+                .ipAddress("192.168.0.3")
+                .operatingSystem("PopOS")
+                .software("Git")
+                .message("Successful login")
+                .build();
+
+        logService.createLog(successfulLogin);
+
+
+        Alarm alarm = Alarm.builder()
+                .message("threat detected")
+                .factStatus(FactStatus.ACTIVE)
+                .os("Windows 10")
+                .ipAddress("192.168.0.1")
+                .relatedUsers(Arrays.asList(user))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        ruleService.insertAlarm(alarm);
+
+        User updatedUser = userRepository.findByUsername("Zack1980").orElse(null);
+        assertEquals(RiskCategory.EXTREME, updatedUser.getRiskCategory());
     }
 
     private static KieSession setUpSessionForStreamProcessingMode() {
@@ -282,7 +325,7 @@ public class ClassifyingUsersTest {
         UserDTO zoran55 = UserDTO.builder().username("Zoran55").password("12345678").build();
         UserDTO john = UserDTO.builder().username("John1960").password("12345678").build();
         UserDTO jane = UserDTO.builder().username("Jane1970").password("12345678").build();
-        UserDTO zack = UserDTO.builder().username("Zach1980").password("12345678").build();
+        UserDTO zack = UserDTO.builder().username("Zack1980").password("12345678").build();
 
 
         userService.registerANewUser(skinnyPete);
