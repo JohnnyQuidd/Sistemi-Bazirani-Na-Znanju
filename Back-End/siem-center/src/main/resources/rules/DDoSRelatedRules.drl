@@ -50,7 +50,7 @@ rule "#14 Brute force is detected on a login system" salience 5
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
-        AlarmPriority $alarmPriority = new AlarmPriority(5 * $logs.size(), $newAlarm, "Brute Force login system");
+        AlarmPriority $alarmPriority = new AlarmPriority(5 * $logs.size(), $newAlarm, "Brute force is detected on a login system");
         insert($alarmPriority);
 end
 
@@ -94,7 +94,7 @@ rule "#12 DDoS attack is detected if system receives 50 or more request in 60 se
         )
     then
         Alarm $newAlarm = new Alarm();
-        $newAlarm.setMessage("DDoS attack");
+        $newAlarm.setMessage("Distributed Denial of Service Attack");
         $newAlarm.setFactStatus(FactStatus.ACTIVE);
         $newAlarm.setRuleTriggered("#12 DDoS attack is detected if system receives 50 or more request in 60 seconds");
         $newAlarm.setTimestamp(LocalDateTime.now());
@@ -104,7 +104,7 @@ rule "#12 DDoS attack is detected if system receives 50 or more request in 60 se
         $newAlarm.getRelatedLogs().add($log);
         $newAlarm.getRelatedUsers().add($log.getUser());
 
-        AlarmPriority $alarmPriority = new AlarmPriority(1 * $logs.size(), $newAlarm, "DDoS attack");
+        AlarmPriority $alarmPriority = new AlarmPriority(1 * $logs.size(), $newAlarm, "Distributed Denial of Service Attack");
         insert($alarmPriority);
 end
 
@@ -114,11 +114,12 @@ rule "Prioritizing DDoS < Payment < BruteForce" salience 3
     when
         $ap: AlarmPriority($p: priority)
         not (AlarmPriority(priority > $p))
+        not (Alarm(message==$ap.getCause(),
+                   timestamp.isAfter(LocalDateTime.now().minusMinutes(1)))
+         )
     then
         alarmRepository.save($ap.getAlarm());
         insert($ap.getAlarm());
         logger.info($ap.getCause() + " Alarm with priority " + $p + " inserted!");
-
-        // TODO: Should i discard from WM an instance that has already been triggered?
-        // delete($ap);
+        //delete($ap);
 end

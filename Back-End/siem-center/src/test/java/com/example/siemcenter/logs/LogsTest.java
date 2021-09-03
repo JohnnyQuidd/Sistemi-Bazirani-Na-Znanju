@@ -1,14 +1,10 @@
 package com.example.siemcenter.logs;
 
 import com.example.siemcenter.SiemCenterApplication;
-import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.models.Device;
-import com.example.siemcenter.common.models.OperatingSystem;
-import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.dtos.LogDTO;
-import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.logs.services.LogService;
@@ -23,7 +19,6 @@ import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
@@ -37,8 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 

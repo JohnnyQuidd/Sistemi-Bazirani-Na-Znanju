@@ -14,6 +14,8 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     @Query(value = "SELECT * FROM ALARM WHERE MESSAGE LIKE CONCAT('%', ?1, '%')", nativeQuery = true)
     List<Alarm> findByMessageContains(String message);
 
+    List<Alarm> findByMessage(String message);
+
     List<Alarm> findByIpAddress(String ipAddress);
 
     List<Alarm> findByOs(String chosenSystem);
