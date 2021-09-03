@@ -2,11 +2,12 @@ package com.example.siemcenter.ddos;
 
 import com.example.siemcenter.SiemCenterApplication;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
-import com.example.siemcenter.alarms.services.AlarmService;
 import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.models.OperatingSystem;
 import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.repositories.OperatingSystemRepository;
+import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.LogsTest;
 import com.example.siemcenter.logs.dtos.LogDTO;
 import com.example.siemcenter.logs.models.Log;
@@ -28,6 +29,7 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
+import org.kie.api.time.SessionPseudoClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +37,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SiemCenterApplication.class)
@@ -57,9 +61,13 @@ public class DDoSTesting {
     @Autowired
     private DevicesForUser devicesForUser;
     @Autowired
-    private LogRepository logRepository;
-    @Autowired
     private RuleService ruleService;
+    @Autowired
+    private OperatingSystemRepository osRepo;
+    @Autowired
+    private SoftwareRepository softwareRepository;
+    @Autowired
+    private LogRepository logRepository;
     private static Integer DEVICE_NUMBER = 1;
     private static boolean setup = false;
 
@@ -128,7 +136,7 @@ public class DDoSTesting {
         for(int i=0; i<50; i++) {
             LogDTO dto = LogDTO.builder()
                     .logType(LogType.ERROR)
-                    .ipAddress("192.168.1.1")
+                    .ipAddress("192.168.5.1")
                     .operatingSystem("Windows")
                     .software("Adobe XD")
                     .username("JohnDoe")
@@ -140,8 +148,77 @@ public class DDoSTesting {
         }
 
         int afterAttack = alarmRepository.findByMessage("Brute force is detected on a login system").size();
-        int ddos = alarmRepository.findByMessage("DDoS attack").size();
         assertEquals(initialSize+1, afterAttack);
+    }
+
+    @Test
+    public void Test22_Malicious_Device() {
+        Device device = Device.builder().isMalicious(false).ipAddress("192.168.16.23").build();
+        deviceRepository.save(device);
+
+        for(int i=0; i<30; i++) {
+            LogDTO dto = LogDTO.builder()
+                    .logType(LogType.ERROR)
+                    .ipAddress("192.168.16.23")
+                    .operatingSystem("Windows")
+                    .software("Adobe XD")
+                    .username("JohnDoe")
+                    .timestamp(LocalDateTime.now())
+                    .message("Failed to log in")
+                    .build();
+
+            logService.createLog(dto);
+        }
+
+        Device afterFailedLoginAttempts = deviceRepository.findByIpAddress("192.168.16.23").orElse(null);
+        assertEquals(true, afterFailedLoginAttempts.isMalicious());
+    }
+
+    // TODO: Should be false when clock is advanced for 2 days
+    @Test
+    public void Test22_Malicious_Device_After_Two_Days() {
+        Device device = Device.builder().isMalicious(false).ipAddress("192.168.16.30").build();
+        deviceRepository.save(device);
+        for(int i=0; i<29; i++) {
+            LogDTO dto = LogDTO.builder()
+                    .logType(LogType.ERROR)
+                    .ipAddress("192.168.16.30")
+                    .operatingSystem("Windows")
+                    .software("Adobe XD")
+                    .username("JohnDoe")
+                    .timestamp(LocalDateTime.now())
+                    .message("Failed to log in")
+                    .build();
+
+            logService.createLog(dto);
+        }
+
+        SessionPseudoClock clock = ksession.getSessionClock();
+        clock.advanceTime(2, TimeUnit.DAYS);
+
+        OperatingSystem os = osRepo.findByName("Windows").orElse(null);
+        Software software = softwareRepository.findSoftwareByName("Adobe XD").orElse(null);
+        User user = userRepository.findByUsername("JohnDoe").orElse(null);
+
+        Log log = Log.builder()
+                ._timestamp(new Date())
+                .uuid(UUID.randomUUID())
+                .logType(LogType.ERROR)
+                .device(device)
+                .os(os)
+                .software(software)
+                .user(user)
+                .timestamp(LocalDateTime.now())
+                .message("Failed to log in")
+                .build();
+
+        logRepository.save(log);
+        ruleService.insertLog(log);
+        ksession.fireAllRules();
+
+
+        Device afterFailedLoginAttempts = deviceRepository.findByIpAddress("192.168.16.30").orElse(null);
+        assertEquals(true, afterFailedLoginAttempts.isMalicious());
     }
 
     private static KieSession setUpSessionForStreamProcessingMode() {
