@@ -2,6 +2,7 @@ package com.example.siemcenter.rules.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,11 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class Rule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
+    @Column(name="content", columnDefinition="LONGTEXT")
     private String content;
 
     @JsonIgnore
@@ -26,4 +29,8 @@ public class Rule {
     @JsonIgnore
     @OneToMany
     private List<Action> actionList;
+
+    public String getContent() {
+        return content;
+    }
 }

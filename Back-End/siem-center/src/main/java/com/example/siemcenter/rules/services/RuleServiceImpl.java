@@ -5,6 +5,7 @@ import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.rules.dtos.RuleUserDTO;
+import com.example.siemcenter.rules.models.Rule;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.drools.UserTrait;
 import com.example.siemcenter.users.models.User;
@@ -13,8 +14,7 @@ import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
 import org.drools.template.ObjectDataCompiler;
 import org.kie.api.KieServices;
-import org.kie.api.builder.Message;
-import org.kie.api.builder.Results;
+import org.kie.api.definition.KiePackage;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ public class RuleServiceImpl implements RuleService {
     private AlarmRepository alarmRepository;
     private UserRepository userRepository;
     private DevicesForUser devicesForUser;
+    private KieHelper kieHelper;
 
 
     @Autowired
@@ -51,21 +53,54 @@ public class RuleServiceImpl implements RuleService {
                            DeviceRepository deviceRepository,
                            AlarmRepository alarmRepository,
                            UserRepository userRepository,
-                           DevicesForUser devicesForUser) {
+                           DevicesForUser devicesForUser,
+                           KieHelper kieHelper) {
         this.ruleRepository = ruleRepository;
         this.deviceRepository = deviceRepository;
         this.alarmRepository = alarmRepository;
         this.userRepository = userRepository;
         this.devicesForUser = devicesForUser;
+        this.kieHelper = kieHelper;
 
         session = setUpSessionForStreamProcessingMode();
+        loadRules();
+        updateSession();
+    }
 
+    private void updateSession() {
+        session = setUpSessionForStreamProcessingMode();
+        setGlobals();
+        long insertedRules = session.getKieBase()
+                .getKiePackages()
+                .stream()
+                .map(KiePackage::getRules)
+                .map(Collection::size)
+                .reduce(0, Integer::sum);
+
+        logger.info(insertedRules + " rules inserted");
+        //printRules();
+    }
+
+//    private void printRules() {
+//        for(Collection<org.kie.api.definition.rule.Rule> rule : session.getKieBase().getKiePackages().stream().map(KiePackage::getRules).collect(Collectors.toList())) {
+//            logger.info(rule.toString());
+//        }
+//    }
+
+    private void setGlobals() {
         session.setGlobal("logger", logger);
         session.setGlobal("deviceRepository", deviceRepository);
         session.setGlobal("alarmRepository", alarmRepository);
         session.setGlobal("userRepository", userRepository);
         session.setGlobal("devicesForUser", devicesForUser);
         session.setGlobal("deviceNumber", DEVICE_NUMBER);
+    }
+
+    private void loadRules() {
+        List<Rule> ruleList = ruleRepository.findAll();
+        for(Rule rule : ruleList) {
+            kieHelper.addContent(rule.getContent(), ResourceType.DRL);
+        }
     }
 
     private KieSession setUpSessionForStreamProcessingMode() {
@@ -179,7 +214,12 @@ public class RuleServiceImpl implements RuleService {
         logger.info("Rule created");
         logger.info(drl);
 
-        //KieSession templateSession = createKieSessionFromDRL(drl);
+        Rule rule = Rule.builder()
+                .content(drl)
+                .build();
+
+        ruleRepository.save(rule);
+        updateSession();
     }
 
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {
@@ -193,24 +233,6 @@ public class RuleServiceImpl implements RuleService {
                         .role(trait.getRole())
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    private KieSession createKieSessionFromDRL(String drl) {
-        KieHelper kieHelper = new KieHelper();
-        kieHelper.addContent(drl, ResourceType.DRL);
-
-        Results results = kieHelper.verify();
-
-        if (results.hasMessages(Message.Level.WARNING, Message.Level.ERROR)) {
-            List<Message> messages = results.getMessages(Message.Level.WARNING, Message.Level.ERROR);
-            for (Message message : messages) {
-                System.out.println("Error: " + message.getText());
-            }
-
-            throw new IllegalStateException("Compilation errors were found. Check the logs.");
-        }
-
-        return kieHelper.build().newKieSession();
     }
 
 }

@@ -13,7 +13,7 @@ function Wrapper() {
   const [url, setUrl] = useState("");
   useEffect(() => {
       setUrl(window.location.href.split('/')[3]);
-  }, []);
+  }, [window.location.href]);
   return (
     <>
       { url && url!== 'login' && <Navbar page={url} /> }

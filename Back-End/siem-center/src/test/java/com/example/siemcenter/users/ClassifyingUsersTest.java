@@ -5,14 +5,11 @@ import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.models.FactStatus;
-import com.example.siemcenter.common.models.OperatingSystem;
-import com.example.siemcenter.common.models.Software;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.common.repositories.OperatingSystemRepository;
 import com.example.siemcenter.common.repositories.SoftwareRepository;
 import com.example.siemcenter.logs.LogsTest;
 import com.example.siemcenter.logs.dtos.LogDTO;
-import com.example.siemcenter.logs.models.Log;
 import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.logs.repositories.LogRepository;
 import com.example.siemcenter.logs.services.LogService;
@@ -42,8 +39,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
