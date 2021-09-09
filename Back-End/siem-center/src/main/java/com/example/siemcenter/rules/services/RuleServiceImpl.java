@@ -78,14 +78,8 @@ public class RuleServiceImpl implements RuleService {
                 .reduce(0, Integer::sum);
 
         logger.info(insertedRules + " rules inserted");
-        //printRules();
     }
 
-//    private void printRules() {
-//        for(Collection<org.kie.api.definition.rule.Rule> rule : session.getKieBase().getKiePackages().stream().map(KiePackage::getRules).collect(Collectors.toList())) {
-//            logger.info(rule.toString());
-//        }
-//    }
 
     private void setGlobals() {
         session.setGlobal("logger", logger);
@@ -128,8 +122,17 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<Log> getLogs() {
+        return logsFetchingBySession(session);
+    }
+
+    @Override
+    public List<Log> getLogsBySession(KieSession kieSession) {
+        return logsFetchingBySession(kieSession);
+    }
+
+    public List<Log> logsFetchingBySession(KieSession currentSession) {
         List<Log> logs = new LinkedList<>();
-        QueryResults allLogs = this.session.getQueryResults("fetchAllLogs");
+        QueryResults allLogs = currentSession.getQueryResults("fetchAllLogs");
         for (QueryResultsRow singleRow : allLogs) {
             logs.add((Log) singleRow.get("$allLogs"));
         }
@@ -138,8 +141,17 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<Alarm> getAlarms() {
+       return fetchAlarmsByCurrentSession(session);
+    }
+
+    @Override
+    public List<Alarm> getAlarmsBySession(KieSession kieSession) {
+        return fetchAlarmsByCurrentSession(kieSession);
+    }
+
+    private List<Alarm> fetchAlarmsByCurrentSession(KieSession currentSession) {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = session.getQueryResults("fetchAllAlarms");
+        QueryResults allAlarms = currentSession.getQueryResults("fetchAllAlarms");
         for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$allAlarms"));
         }
@@ -148,8 +160,17 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<Alarm> getAlarmForRule(String ruleName) {
+        return getAlarmsForRuleAndCurrentSession(session, ruleName);
+    }
+
+    @Override
+    public List<Alarm> getAlarmForRuleAndSession(String ruleName, KieSession kieSession) {
+        return getAlarmsForRuleAndCurrentSession(kieSession, ruleName);
+    }
+
+    private List<Alarm> getAlarmsForRuleAndCurrentSession(KieSession currentSession, String ruleName) {
         List<Alarm> alarms = new LinkedList<>();
-        QueryResults allAlarms = session.getQueryResults("fetchAlarmsForRuleName", ruleName);
+        QueryResults allAlarms = currentSession.getQueryResults("fetchAlarmsForRuleName", ruleName);
         for (QueryResultsRow singleRow : allAlarms) {
             alarms.add((Alarm) singleRow.get("$alarms"));
         }
@@ -186,8 +207,17 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public List<Log> fetchLogsByRegex(String regex) {
+        return fetchRegexLogsForSession(session, regex);
+    }
+
+    @Override
+    public List<Log> fetchLogsByRegexAndSession(String regex, KieSession kieSession) {
+        return fetchRegexLogsForSession(kieSession, regex);
+    }
+
+    private List<Log> fetchRegexLogsForSession(KieSession currentSession, String regex) {
         List<Log> logList = new LinkedList<>();
-        QueryResults logResults = session.getQueryResults("fetchLogsByRegex", regex);
+        QueryResults logResults = currentSession.getQueryResults("fetchLogsByRegex", regex);
         for (QueryResultsRow singleRow : logResults) {
             logList.add((Log) singleRow.get("$regexLogs"));
         }
@@ -196,8 +226,17 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     public List<Alarm> fetchAlarmsByRegex(String regex) {
+        return fetchRegexAlarmsForSession(session, regex);
+    }
+
+    @Override
+    public List<Alarm> fetchAlarmsByRegexAndSession(String regex, KieSession kieSession) {
+        return fetchRegexAlarmsForSession(kieSession, regex);
+    }
+
+    private List<Alarm> fetchRegexAlarmsForSession(KieSession currentSession, String regex) {
         List<Alarm> alarmList = new LinkedList<>();
-        QueryResults logResults = session.getQueryResults("fetchAlarmsByRegex", regex);
+        QueryResults logResults = currentSession.getQueryResults("fetchAlarmsByRegex", regex);
         for (QueryResultsRow singleRow : logResults) {
             alarmList.add((Alarm) singleRow.get("$regexAlarms"));
         }
