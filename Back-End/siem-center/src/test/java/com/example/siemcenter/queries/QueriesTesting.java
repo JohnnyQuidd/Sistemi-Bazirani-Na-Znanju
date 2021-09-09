@@ -1,6 +1,7 @@
-package com.example.siemcenter.ddos;
+package com.example.siemcenter.queries;
 
 import com.example.siemcenter.SiemCenterApplication;
+import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.models.Device;
 import com.example.siemcenter.common.models.OperatingSystem;
@@ -29,7 +30,8 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
-import org.kie.api.time.SessionPseudoClock;
+import org.kie.api.runtime.rule.QueryResults;
+import org.kie.api.runtime.rule.QueryResultsRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +40,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SiemCenterApplication.class)
-public class DDoSTesting {
+public class QueriesTesting {
     private static KieSession ksession;
     private Logger logger = LoggerFactory.getLogger(LogsTest.class);
     @Autowired
@@ -74,7 +77,7 @@ public class DDoSTesting {
 
     @Before
     public void start() {
-        if(!setup) {
+        if (!setup) {
             KieServices ks = KieServices.Factory.get();
             KieContainer kc = ks.newKieClasspathContainer();
             ksession = setUpSessionForStreamProcessingMode();
@@ -85,121 +88,64 @@ public class DDoSTesting {
     }
 
     @Test
-    public void Rule12_DDosDetected() {
-        int initialSize = alarmRepository.findByMessage("Distributed Denial of Service Attack").size();
-        for(int i=0; i<50; i++) {
-            LogDTO dto = LogDTO.builder()
-                    .logType(LogType.INFORMATION)
-                    .ipAddress("192.168.3.1")
-                    .operatingSystem("Windows")
-                    .software("Adobe XD")
-                    .username("EricHansen")
-                    .timestamp(LocalDateTime.now())
-                    .message("Invalid fields")
-                    .build();
+    public void logsFetchingTest() {
+        assertEquals(0, getLogs().size());
 
-            logService.createLog(dto);
-        }
+        Log log = createLog();
+        ksession.insert(log);
 
-        int afterAttack = alarmRepository.findByMessage("Distributed Denial of Service Attack").size();
-        // When run alone
-        //assertEquals(initialSize+1, afterAttack);
-
-        // When run in conjunction with other tests
-        assertEquals(afterAttack, initialSize);
+        assertEquals(1, getLogs().size());
     }
 
     @Test
-    public void Rule13_DDos_On_Payment_System() {
-        int initialSize = alarmRepository.findByMessage("DDoS attack regarding payment system").size();
-        for(int i=0; i<50; i++) {
-            LogDTO dto = LogDTO.builder()
-                    .logType(LogType.INFORMATION)
-                    .ipAddress("192.168.1.1")
-                    .operatingSystem("Windows")
-                    .software("Adobe XD")
-                    .username("JohnDoe")
-                    .timestamp(LocalDateTime.now())
-                    .message("Payment request")
-                    .build();
+    public void alarmsFetchingTest() {
+        assertEquals(0, ruleService.getAlarms().size());
 
-            logService.createLog(dto);
-        }
+        Alarm alarm = createAlarm();
+        ksession.insert(alarm);
 
-        int afterAttack = alarmRepository.findByMessage("DDoS attack regarding payment system").size();
-        assertEquals(initialSize+1, afterAttack);
+        assertEquals(1, getAlarms().size());
     }
 
     @Test
-    public void Rule14_BruteForce_LoginSystem() {
-        int initialSize = alarmRepository.findByMessage("Brute force is detected on a login system").size();
-        for(int i=0; i<50; i++) {
-            LogDTO dto = LogDTO.builder()
-                    .logType(LogType.ERROR)
-                    .ipAddress("192.168.5.1")
-                    .operatingSystem("Windows")
-                    .software("Adobe XD")
-                    .username("JohnDoe")
-                    .timestamp(LocalDateTime.now())
-                    .message("Failed login")
-                    .build();
+    public void alarmsFetchingByRuleName() {
+        assertEquals(0, getAlarmForRule("#1").size());
 
-            logService.createLog(dto);
-        }
+        Alarm alarm = createAlarmWithRule();
+        ksession.insert(alarm);
 
-        int afterAttack = alarmRepository.findByMessage("Brute force is detected on a login system").size();
-        assertEquals(initialSize+1, afterAttack);
+        assertEquals(1, getAlarmForRule("#1").size());
     }
 
     @Test
-    public void Test22_Malicious_Device() {
-        Device device = Device.builder().isMalicious(false).ipAddress("192.168.16.23").build();
+    public void logsRegexFetching() {
+        Log log = createRegexLog();
+        ksession.insert(log);
+
+        assertEquals(1, fetchLogsByRegex("^[0-9]{10}").size());
+    }
+
+    @Test
+    public void alarmsRegexFetching() {
+        Alarm alarm = createRegexAlarm();
+        ksession.insert(alarm);
+
+        assertEquals(1, fetchAlarmsByRegex("^[A-Z]{5}").size());
+    }
+
+    private Log createLog() {
+        OperatingSystem logOs = new OperatingSystem("Windows");
+        osRepo.save(logOs);
+        Software logSoftware = new Software("Adobe XD");
+        softwareRepository.save(logSoftware);
+        Device device = new Device("192.168.0.1");
         deviceRepository.save(device);
-
-        for(int i=0; i<30; i++) {
-            LogDTO dto = LogDTO.builder()
-                    .logType(LogType.ERROR)
-                    .ipAddress("192.168.16.23")
-                    .operatingSystem("Windows")
-                    .software("Adobe XD")
-                    .username("JohnDoe")
-                    .timestamp(LocalDateTime.now())
-                    .message("Failed to log in")
-                    .build();
-
-            logService.createLog(dto);
-        }
-
-        Device afterFailedLoginAttempts = deviceRepository.findByIpAddress("192.168.16.23").orElse(null);
-        assertEquals(true, afterFailedLoginAttempts.isMalicious());
-    }
-
-    @Test
-    public void Test22_Malicious_Device_After_Two_Days() {
-        Device device = Device.builder().isMalicious(false).ipAddress("192.168.16.30").build();
-        deviceRepository.save(device);
-        for(int i=0; i<29; i++) {
-            LogDTO dto = LogDTO.builder()
-                    .logType(LogType.ERROR)
-                    .ipAddress("192.168.16.30")
-                    .operatingSystem("Windows")
-                    .software("Adobe XD")
-                    .username("JohnDoe")
-                    .timestamp(LocalDateTime.now())
-                    .message("Failed to log in")
-                    .build();
-
-            logService.createLog(dto);
-        }
-
-        SessionPseudoClock clock = ksession.getSessionClock();
-        clock.advanceTime(2, TimeUnit.DAYS);
 
         OperatingSystem os = osRepo.findByName("Windows").orElse(null);
         Software software = softwareRepository.findSoftwareByName("Adobe XD").orElse(null);
         User user = userRepository.findByUsername("JohnDoe").orElse(null);
 
-        Log log = Log.builder()
+        return Log.builder()
                 ._timestamp(new Date())
                 .uuid(UUID.randomUUID())
                 .logType(LogType.ERROR)
@@ -210,14 +156,101 @@ public class DDoSTesting {
                 .timestamp(LocalDateTime.now())
                 .message("Failed to log in")
                 .build();
+    }
 
-        logRepository.save(log);
-        ksession.insert(log);
-        ksession.fireAllRules();
+    private Log createRegexLog() {
+        OperatingSystem logOs = new OperatingSystem("Ubuntu");
+        osRepo.save(logOs);
+        Software logSoftware = new Software("Powerpoint");
+        softwareRepository.save(logSoftware);
+        Device device = new Device("192.168.1.1");
+        deviceRepository.save(device);
+
+        OperatingSystem os = osRepo.findByName("Ubuntu").orElse(null);
+        Software software = softwareRepository.findSoftwareByName("Powerpoint").orElse(null);
+        User user = userRepository.findByUsername("JaneDoe").orElse(null);
+
+        return Log.builder()
+                ._timestamp(new Date())
+                .uuid(UUID.randomUUID())
+                .logType(LogType.ERROR)
+                .device(device)
+                .os(os)
+                .software(software)
+                .user(user)
+                .timestamp(LocalDateTime.now())
+                .message("0652210021")
+                .build();
+    }
 
 
-        Device afterFailedLoginAttempts = deviceRepository.findByIpAddress("192.168.16.30").orElse(null);
-        assertEquals(false, afterFailedLoginAttempts.isMalicious());
+
+
+    private List<Log> getLogs() {
+        List<Log> logs = new LinkedList<>();
+        QueryResults allLogs = ksession.getQueryResults("fetchAllLogs");
+        for (QueryResultsRow singleRow : allLogs) {
+            logs.add((Log) singleRow.get("$allLogs"));
+        }
+        return logs;
+    }
+
+    private Alarm createAlarm() {
+        return Alarm.builder()
+                .message("Default alarm")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private Alarm createRegexAlarm() {
+        return Alarm.builder()
+                .message("ALARM")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private Alarm createAlarmWithRule() {
+        return Alarm.builder()
+                .message("Default alarm")
+                .ruleTriggered("#1")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private List<Alarm> getAlarms() {
+        List<Alarm> alarms = new LinkedList<>();
+        QueryResults allAlarms = ksession.getQueryResults("fetchAllAlarms");
+        for (QueryResultsRow singleRow : allAlarms) {
+            alarms.add((Alarm) singleRow.get("$allAlarms"));
+        }
+        return alarms;
+    }
+
+    private List<Alarm> getAlarmForRule(String ruleName) {
+        List<Alarm> alarms = new LinkedList<>();
+        QueryResults allAlarms = ksession.getQueryResults("fetchAlarmsForRuleName", ruleName);
+        for (QueryResultsRow singleRow : allAlarms) {
+            alarms.add((Alarm) singleRow.get("$alarms"));
+        }
+        return alarms;
+    }
+
+    public List<Alarm> fetchAlarmsByRegex(String regex) {
+        List<Alarm> alarmList = new LinkedList<>();
+        QueryResults logResults = ksession.getQueryResults("fetchAlarmsByRegex", regex);
+        for (QueryResultsRow singleRow : logResults) {
+            alarmList.add((Alarm) singleRow.get("$regexAlarms"));
+        }
+        return alarmList;
+    }
+
+    private List<Log> fetchLogsByRegex(String regex) {
+        List<Log> logList = new LinkedList<>();
+        QueryResults logResults = ksession.getQueryResults("fetchLogsByRegex", regex);
+        for (QueryResultsRow singleRow : logResults) {
+            logList.add((Log) singleRow.get("$regexLogs"));
+        }
+        return logList;
     }
 
     private static KieSession setUpSessionForStreamProcessingMode() {
@@ -251,4 +284,5 @@ public class DDoSTesting {
         userService.registerANewUser(ericHansen);
         setup = true;
     }
+
 }
