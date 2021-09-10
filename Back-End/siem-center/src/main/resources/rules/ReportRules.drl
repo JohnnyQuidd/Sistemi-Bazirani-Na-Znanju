@@ -80,7 +80,6 @@ rule "#24 Failed attempts to login from N different devices in a time span of 12
         insert($trait);
 end
 
-// TODO: After some time data in memory can become stale so we'll never check again if user has triggered an alarm in past 10 days
 rule "#25 Users that triggered at least 10 alarms in past 10 days" salience 5
     when
         $alarm: Alarm()

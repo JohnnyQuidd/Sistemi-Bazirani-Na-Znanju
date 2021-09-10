@@ -197,7 +197,6 @@ public class LogServiceImpl implements LogService {
             return logRepository.findByMessageContains(logDTO.getMessage());
         }
         if (logDTO.isRegex() && !logDTO.getMessage().equals("")) {
-            // TODO: Fetch from repository instead
             return ruleService.fetchLogsByRegex(logDTO.getMessage());
         }
 

@@ -118,7 +118,7 @@ function LogsReport() {
       data: data,
     })
       .then((response) => {
-        setLogs(response.data);
+        setLogs(prettifyDateTime(response.data));
         setCounter(response.data.length);
         setShowCounter(true);
       })

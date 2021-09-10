@@ -26,6 +26,7 @@ import org.kie.internal.utils.KieHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Scope("singleton")
 public class RuleServiceImpl implements RuleService {
     private static Integer DEVICE_NUMBER = 1;
     private Logger logger = LoggerFactory.getLogger(RuleServiceImpl.class);
