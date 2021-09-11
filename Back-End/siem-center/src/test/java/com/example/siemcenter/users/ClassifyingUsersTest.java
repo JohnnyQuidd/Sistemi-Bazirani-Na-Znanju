@@ -234,7 +234,7 @@ public class ClassifyingUsersTest {
         logService.createLog(dto);
 
         User updatedJane = userRepository.findByUsername("Jane1970").orElse(null);
-        assertEquals(RiskCategory.LOW, updatedJane.getRiskCategory());
+        assertEquals(RiskCategory.EXTREME, updatedJane.getRiskCategory());
     }
 
     @Test
