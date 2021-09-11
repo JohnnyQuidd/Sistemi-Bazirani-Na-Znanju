@@ -7,6 +7,7 @@ function Navbar({ page }) {
   const [alarmsClass, setAlarmsClass] = useState("inactive");
   const [reportsClass, setReportsClass] = useState("inactive");
   const [alarmsReportClass, setAlarmsReportClass] = useState("inactive");
+  const [rulesClass, setRulesClass] = useState("inactive");
 
   useEffect(() => {
     setPage(page);
@@ -20,6 +21,7 @@ function Navbar({ page }) {
         setAlarmsClass("inactive");
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
+        setRulesClass("inactive");
         break;
       case "logs":
         setAdminClass("inactive");
@@ -27,6 +29,7 @@ function Navbar({ page }) {
         setAlarmsClass("inactive");
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
+        setRulesClass("inactive");
         break;
       case "alarms":
         setAdminClass("inactive");
@@ -34,6 +37,7 @@ function Navbar({ page }) {
         setAlarmsClass("active");
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
+        setRulesClass("inactive");
         break;
       case "logs-report":
         setAdminClass("inactive");
@@ -41,6 +45,7 @@ function Navbar({ page }) {
         setAlarmsClass("inactive");
         setReportsClass("active");
         setAlarmsReportClass("inactive");
+        setRulesClass("inactive");
         break;
       case "alarms-report":
         setAdminClass("inactive");
@@ -48,6 +53,15 @@ function Navbar({ page }) {
         setAlarmsClass("inactive");
         setReportsClass("inactive");
         setAlarmsReportClass("active");
+        setRulesClass("inactive");
+        break;
+      case "rules":
+        setAdminClass("inactive");
+        setLogsClass("inactive");
+        setAlarmsClass("inactive");
+        setReportsClass("inactive");
+        setAlarmsReportClass("inactive");
+        setRulesClass("active");
         break;
     }
   };
@@ -77,6 +91,11 @@ function Navbar({ page }) {
       <li>
         <a className={alarmsReportClass} href="/alarms-report">
           Alarms report
+        </a>
+      </li>
+      <li>
+        <a className={rulesClass} href="/rules">
+          Rules
         </a>
       </li>
     </ul>

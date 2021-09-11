@@ -17,4 +17,6 @@ public interface LogRepository extends JpaRepository<Log, Long> {
     List<Log> findByDevice_IpAddress(String ipAddress);
 
     List<Log> findByOs_Name(String chosenSystem);
+
+    List<Log> findByUser_Username(String username);
 }

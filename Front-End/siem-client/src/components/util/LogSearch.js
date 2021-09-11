@@ -19,7 +19,7 @@ function LogSearch({ query }) {
       <div className="regex-wrapper">
         <input id="search-message" placeholder="Message content/regex" value={message} onChange={e => setMessage(e.target.value)} />
         <label id="regex-label"> REGEX</label>
-        <input id="regex-checkbox" type="checkbox" value={regex} onChange={e => setRegex(e.target.value)} />
+        <input id="regex-checkbox" type="checkbox" value={regex} onChange={e => setRegex(!regex)} />
       </div>
       <div className="criteria-wrapper">
         <select className="log-type" value={logType} onChange={e => setLogType(e.target.value)}>

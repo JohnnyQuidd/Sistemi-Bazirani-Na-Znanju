@@ -1,0 +1,10 @@
+.user-device-wrapper {
+  padding: 1rem;
+  background-color: rgba(83, 82, 82, 0.7);
+  border: none;
+  border-radius: 10px;
+}
+
+.rule-explanation {
+  font-size: 1.3rem;
+}

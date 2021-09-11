@@ -13,18 +13,22 @@ import com.example.siemcenter.logs.models.LogType;
 import com.example.siemcenter.users.models.User;
 import com.example.siemcenter.users.models.RiskCategory;
 import com.example.siemcenter.users.repositories.UserRepository;
+import com.example.siemcenter.alarms.repositories.AlarmRepository;
+
 
 global Logger logger;
+global AlarmRepository alarmRepository;
 global DeviceRepository deviceRepository;
 global UserRepository userRepository;
 
 
-rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 5
+rule "#15 Low risk category user is not associated with any alarm in past 90 days" salience 50
+    no-loop true
     when
-        $log: Log($username: user.getUsername())
-        $user: User(username == $username) from userRepository.findAllUsers();
+        $log: Log($logUser: user, logType != LogType.INFORMATION)
+        $user: User() from userRepository.findByUsername($logUser.getUsername()).orElse(null)
         not(
-            Alarm(relatedUsers contains $user )
+            Alarm(relatedUsers contains $user)
             over window:time(90d)
         )
     then
@@ -34,8 +38,9 @@ rule "#15 Low risk category user is not associated with any alarm in past 90 day
 end
 
 rule "#16 Moderate risk category if user has triggered an antivirus alarm in past 6 months" salience 5
+    no-loop true
     when
-        $log: Log($user: user)
+        $user: User() from userRepository.findAllUsers()
         $alarm: Alarm(relatedUsers contains $user,
                 message.toLowerCase() contains "antivirus"
                 || message.toLowerCase() contains "threat detected"
@@ -48,6 +53,7 @@ rule "#16 Moderate risk category if user has triggered an antivirus alarm in pas
 end
 
 rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
+    no-loop true
     when
         Log($user: user, message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
@@ -68,11 +74,10 @@ rule "#17 Moderate risk category if 15 or more failed login attempts" salience 5
        logger.info("#17 User " + $user.getUsername() + " has gotten a MODERATE risk category" );
 end
 
-// TODO: Check if condition makes sense
 rule "#18 High risk category because Admin has triggered an alarm in past 30 days" salience 5
+    no-loop true
     when
-        $log: Log($logUser: user)
-        $user: User(username == $logUser.getUsername()) from userRepository.findAllAdmins()
+        $user: User() from userRepository.findAllAdmins()
         Alarm(relatedUsers contains $user) over window:time(30d)
     then
        $user.setRiskCategory(RiskCategory.HIGH);
@@ -81,6 +86,7 @@ rule "#18 High risk category because Admin has triggered an alarm in past 30 day
 end
 
 rule "#19 High risk if admin failed 2 times to log in following by successful login before or after his shift" salience 5
+    no-loop true
     when
         $admin: User() from userRepository.findAllAdmins()
         $scflLog: Log(user == $admin,
@@ -107,11 +113,11 @@ rule "#19 High risk if admin failed 2 times to log in following by successful lo
        logger.info("#19 Admin " + $admin.getUsername() + " has gotten a HIGH risk category" );
 end
 
-rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 5
+rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 1
+    no-loop true
     when
-        $device: Device(malicious == true) from deviceRepository.findAll()
         $log: Log($user: user,
-                  device == $device,
+                  device.isMalicious(),
                   message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
                   || message.toLowerCase() contains "log-in"
@@ -123,10 +129,11 @@ rule "#20 Extreme risk category if an account has login attempt from malicious d
 end
 
 rule "#21 Extreme risk category for user has been associated with antivirus in last 6 months" salience 5
+    no-loop true
     when
-        $user: User() from userRepository.findAll()
+        $user: User() from userRepository.findAllUsers()
         Number(intValue >= 1) from accumulate (
-            $alarm: Alarm(relatedUsers contains $user)
+            $alarm: Alarm(relatedUsers contains $user, message contains "threat detected")
             over window:time(180d), count($alarm)
         )
         $log: Log(message.toLowerCase() contains "login"

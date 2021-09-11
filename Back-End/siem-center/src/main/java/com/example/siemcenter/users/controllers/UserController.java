@@ -56,7 +56,7 @@ public class UserController {
     @PostMapping(path = "/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO loginDTO) {
         String role = userService.loginUser(loginDTO);
-        return role == null ?  ResponseEntity.status(403).build() : ResponseEntity.ok(role);
+        return role == null ? ResponseEntity.status(403).build() : ResponseEntity.ok(role);
     }
 
     @GetMapping(path = "/alarms")

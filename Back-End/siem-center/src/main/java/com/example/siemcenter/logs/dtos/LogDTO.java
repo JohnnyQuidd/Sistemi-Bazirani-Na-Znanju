@@ -26,4 +26,14 @@ public class LogDTO {
     private String username;
     private LocalDateTime timestamp;
     private String message;
+
+    public LogDTO(LogDTO log) {
+        logType = log.getLogType();
+        ipAddress = log.getIpAddress();
+        operatingSystem = log.getOperatingSystem();
+        software = log.getSoftware();
+        username = log.getUsername();
+        timestamp = log.getTimestamp();
+        message = log.getMessage();
+    }
 }

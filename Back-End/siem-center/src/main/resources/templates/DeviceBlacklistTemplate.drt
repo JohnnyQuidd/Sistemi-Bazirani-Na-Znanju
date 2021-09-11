@@ -1,0 +1,57 @@
+template header
+ipAddress
+numberOfLogs
+days
+
+import java.util.List;
+import java.util.UUID;
+import java.lang.String;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import com.example.siemcenter.common.models.Device;
+import com.example.siemcenter.common.repositories.DeviceRepository;
+import com.example.siemcenter.common.models.FactStatus;
+import com.example.siemcenter.alarms.models.Alarm;
+import com.example.siemcenter.alarms.repositories.AlarmRepository;
+import com.example.siemcenter.logs.models.Log;
+import com.example.siemcenter.util.DevicesForUser;
+import com.example.siemcenter.logs.models.LogType;
+import com.example.siemcenter.users.models.User;
+import com.example.siemcenter.users.models.RiskCategory;
+import com.example.siemcenter.users.repositories.UserRepository;
+
+global Logger logger;
+global DeviceRepository deviceRepository;
+global AlarmRepository alarmRepository;
+global UserRepository userRepository;
+global DevicesForUser devicesForUser;
+
+
+template "DeviceBlacklistTemplate"
+    rule "Blacklist Device_@{row.rowNumber}"
+        no-loop true
+        when
+            $log: Log(device.getIpAddress().equals("${ipAddress}"))
+            Number(intValue >= @{numberOfLogs}) from accumulate(
+                $l: Log(device.getIpAddress().equals("${ipAddress}"))
+                over window:time(@{days}d),
+                count($l)
+            )
+        then
+            Alarm $newAlarm = new Alarm();
+            $newAlarm.setMessage("Blacklisted device exceeded the limit");
+            $newAlarm.setFactStatus(FactStatus.ACTIVE);
+            $newAlarm.setRuleTriggered("Blacklist Device_@{row.rowNumber}");
+            $newAlarm.setTimestamp(LocalDateTime.now());
+
+            $newAlarm.getRelatedLogs().add($log);
+            $newAlarm.getRelatedUsers().add($log.getUser());
+
+            $newAlarm.setIpAddress("@{ipAddress}");
+            $newAlarm.setOs($log.getOs().getName());
+
+            alarmRepository.save($newAlarm);
+            insert($newAlarm);
+            logger.info("Custom rule fired! Blacklisted device ${ipAddress} exceeded the limit!");
+    end
+end template
