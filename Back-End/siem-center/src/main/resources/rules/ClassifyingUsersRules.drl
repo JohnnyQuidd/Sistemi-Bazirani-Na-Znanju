@@ -116,9 +116,8 @@ end
 rule "#20 Extreme risk category if an account has login attempt from malicious device" salience 1
     no-loop true
     when
-        $device: Device(malicious == true) from deviceRepository.findAll()
         $log: Log($user: user,
-                  device.getIpAddress() == $device.getIpAddress(),
+                  device.isMalicious(),
                   message.toLowerCase() contains "login"
                   || message.toLowerCase() contains "log in"
                   || message.toLowerCase() contains "log-in"

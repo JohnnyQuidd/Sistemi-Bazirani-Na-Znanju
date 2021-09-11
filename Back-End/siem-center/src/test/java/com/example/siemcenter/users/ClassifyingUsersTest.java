@@ -212,7 +212,6 @@ public class ClassifyingUsersTest {
         assertEquals(RiskCategory.HIGH, updatedAdmin.getRiskCategory());
     }
 
-    // TODO: Should be EXTREME, not LOW
     @Test
     public void Test20_Login_Attempt_From_Malicious_Device() {
         User jane = userRepository.findByUsername("Jane1970").orElse(null);
