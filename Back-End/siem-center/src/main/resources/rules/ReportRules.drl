@@ -23,6 +23,7 @@ global DeviceRepository deviceRepository;
 global AlarmRepository alarmRepository;
 global UserRepository userRepository;
 global Integer deviceNumber;
+global List<String> deviceList;
 
 declare ProcessedAlarm
     ruleTriggered: String
@@ -32,8 +33,6 @@ end
 declare trait AlarmUser
 end
 
-
-// TODO: On at least 3 different parts of Information System
 rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months" salience 1
     when
         Alarm()
@@ -101,5 +100,18 @@ end
 rule "#26 Parts of system that generated five alarms while users with HIGH or EXTREME risk factors worked on them" salience 5
     when
         $alarm: Alarm()
+        $user: User() from userRepository.findAllUsers()
+        Number(intValue >= 5) from accumulate (
+            $a: Alarm(relatedUsers contains $user,
+                       $user.riskCategory == RiskCategory.HIGH
+                    || $user.riskCategory == RiskCategory.EXTREME
+                    )
+            over window:time(10d),
+            count($a)
+            // deviceList.add($a.getIpAddress())
+            )
     then
+        for(String ipAddress : deviceList) {
+            logger.info(ipAddress);
+        }
 end

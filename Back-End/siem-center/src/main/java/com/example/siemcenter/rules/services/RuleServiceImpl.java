@@ -4,7 +4,7 @@ import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.alarms.repositories.AlarmRepository;
 import com.example.siemcenter.common.repositories.DeviceRepository;
 import com.example.siemcenter.logs.models.Log;
-import com.example.siemcenter.rules.dtos.RuleUserDTO;
+import com.example.siemcenter.rules.dtos.RuleDeviceDTO;
 import com.example.siemcenter.rules.models.Rule;
 import com.example.siemcenter.rules.repositories.RuleRepository;
 import com.example.siemcenter.users.drools.UserTrait;
@@ -13,8 +13,10 @@ import com.example.siemcenter.users.repositories.UserRepository;
 import com.example.siemcenter.util.DevicesForUser;
 import org.drools.core.ClockType;
 import org.drools.template.ObjectDataCompiler;
+import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.definition.KiePackage;
+import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -22,6 +24,9 @@ import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
+import org.kie.internal.builder.KnowledgeBuilder;
+import org.kie.internal.builder.KnowledgeBuilderFactory;
+import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.utils.KieHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.StringReader;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +49,7 @@ public class RuleServiceImpl implements RuleService {
     private UserRepository userRepository;
     private DevicesForUser devicesForUser;
     private KieHelper kieHelper;
+    private List<String> deviceList;
 
 
     @Autowired
@@ -61,23 +65,13 @@ public class RuleServiceImpl implements RuleService {
         this.userRepository = userRepository;
         this.devicesForUser = devicesForUser;
         this.kieHelper = kieHelper;
+        this.deviceList = new ArrayList<>();
 
         session = setUpSessionForStreamProcessingMode();
-        loadRules();
-        updateSession();
-    }
 
-    private void updateSession() {
-        session = setUpSessionForStreamProcessingMode();
+        // TODO: Load rules properly
+        //loadRules();
         setGlobals();
-        long insertedRules = session.getKieBase()
-                .getKiePackages()
-                .stream()
-                .map(KiePackage::getRules)
-                .map(Collection::size)
-                .reduce(0, Integer::sum);
-
-        logger.info(insertedRules + " rules inserted");
     }
 
 
@@ -88,13 +82,7 @@ public class RuleServiceImpl implements RuleService {
         session.setGlobal("userRepository", userRepository);
         session.setGlobal("devicesForUser", devicesForUser);
         session.setGlobal("deviceNumber", DEVICE_NUMBER);
-    }
-
-    private void loadRules() {
-        List<Rule> ruleList = ruleRepository.findAll();
-        for(Rule rule : ruleList) {
-            kieHelper.addContent(rule.getContent(), ResourceType.DRL);
-        }
+        session.setGlobal("deviceList", deviceList);
     }
 
     private KieSession setUpSessionForStreamProcessingMode() {
@@ -106,6 +94,19 @@ public class RuleServiceImpl implements RuleService {
 
         KieSession session = kc.newKieSession("session1", ksconf);
         return session;
+    }
+
+    private void loadRules() {
+        KnowledgeBuilder knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+        List<Rule> ruleList = ruleRepository.findAll();
+        for(Rule rule : ruleList) {
+            Resource r = ResourceFactory.newReaderResource(new StringReader(rule.getContent()));
+            logger.info("Loading DRL...");
+            logger.info(rule.getContent());
+            knowledgeBuilder.add(r, ResourceType.DRL);
+        }
+        KieBase kieBase = knowledgeBuilder.newKieBase();
+        session = kieBase.newKieSession();
     }
 
     @Override
@@ -244,11 +245,11 @@ public class RuleServiceImpl implements RuleService {
     }
 
     @Override
-    public void createNewRuleFromUserDeviceDTO(RuleUserDTO dto) {
-        InputStream template = RuleServiceImpl.class.getResourceAsStream("/templates/UserDevicesTemplate.drt");
+    public void createNewRuleFromUserDeviceDTO(RuleDeviceDTO dto) {
+        InputStream template = RuleServiceImpl.class.getResourceAsStream("/templates/DeviceBlacklistTemplate.drt");
         ObjectDataCompiler converter = new ObjectDataCompiler();
 
-        List<RuleUserDTO> data = Arrays.asList(dto);
+        List<RuleDeviceDTO> data = Arrays.asList(dto);
         String drl = converter.compile(data, template);
         logger.info("Rule created");
         logger.info(drl);
@@ -258,7 +259,8 @@ public class RuleServiceImpl implements RuleService {
                 .build();
 
         ruleRepository.save(rule);
-        updateSession();
+        // Todo: Load rules after insertion
+        //loadRules();
     }
 
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {

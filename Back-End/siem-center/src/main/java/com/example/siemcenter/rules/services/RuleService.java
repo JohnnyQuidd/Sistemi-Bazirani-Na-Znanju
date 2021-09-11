@@ -2,7 +2,7 @@ package com.example.siemcenter.rules.services;
 
 import com.example.siemcenter.alarms.models.Alarm;
 import com.example.siemcenter.logs.models.Log;
-import com.example.siemcenter.rules.dtos.RuleUserDTO;
+import com.example.siemcenter.rules.dtos.RuleDeviceDTO;
 import com.example.siemcenter.users.models.User;
 import org.kie.api.runtime.KieSession;
 
@@ -39,5 +39,5 @@ public interface RuleService {
 
     List<Alarm> fetchAlarmsByRegexAndSession(String regex, KieSession session);
 
-    void createNewRuleFromUserDeviceDTO(RuleUserDTO dto);
+    void createNewRuleFromUserDeviceDTO(RuleDeviceDTO dto);
 }

@@ -1,6 +1,6 @@
 package com.example.siemcenter.rules.controllers;
 
-import com.example.siemcenter.rules.dtos.RuleUserDTO;
+import com.example.siemcenter.rules.dtos.RuleDeviceDTO;
 import com.example.siemcenter.rules.services.RuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +21,8 @@ public class RuleController {
         this.ruleService = ruleService;
     }
 
-    @PostMapping("/users/devices")
-    public ResponseEntity<?> creteNewRuleForUserAndNumberOfAllowedDevices(@Valid @RequestBody RuleUserDTO dto) {
+    @PostMapping("/devices")
+    public ResponseEntity<?> creteNewRuleForBlackListingDevice(@Valid @RequestBody RuleDeviceDTO dto) {
         ruleService.createNewRuleFromUserDeviceDTO(dto);
         return ResponseEntity.ok("");
     }
