@@ -84,7 +84,9 @@ rule "#25 Users that triggered at least 10 alarms in past 10 days" salience 5
         $alarm: Alarm()
         $user: User() from userRepository.findAllUsers()
         Number(intValue >= 10) from accumulate (
-            $a: Alarm(relatedUsers contains $user)
+            $a: Alarm(relatedUsers contains $user,
+                      message.toLowerCase() contains "antivirus"
+            )
             over window:time(10d), count($a)
         )
         not ( ProcessedAlarm(ruleTriggered == "#25", id.equals($alarm.getId()) ) )

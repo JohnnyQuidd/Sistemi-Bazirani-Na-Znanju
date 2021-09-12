@@ -70,6 +70,7 @@ function Dashboard() {
       <div className="users-table-wrapper">
         <UsersTable usersData={usersData} updateUser={updateUser} />
       </div>
+      <a id="logout" href="/"> Logout </a>
     </div>
   );
 }

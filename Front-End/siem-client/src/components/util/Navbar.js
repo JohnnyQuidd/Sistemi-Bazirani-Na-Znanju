@@ -8,6 +8,7 @@ function Navbar({ page }) {
   const [reportsClass, setReportsClass] = useState("inactive");
   const [alarmsReportClass, setAlarmsReportClass] = useState("inactive");
   const [rulesClass, setRulesClass] = useState("inactive");
+  const [usersReportClass, setUsersReportClass] = useState("inactive");
 
   useEffect(() => {
     setPage(page);
@@ -22,6 +23,7 @@ function Navbar({ page }) {
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
         setRulesClass("inactive");
+        setUsersReportClass("inactive");
         break;
       case "logs":
         setAdminClass("inactive");
@@ -30,6 +32,7 @@ function Navbar({ page }) {
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
         setRulesClass("inactive");
+        setUsersReportClass("inactive");
         break;
       case "alarms":
         setAdminClass("inactive");
@@ -38,6 +41,7 @@ function Navbar({ page }) {
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
         setRulesClass("inactive");
+        setUsersReportClass("inactive");
         break;
       case "logs-report":
         setAdminClass("inactive");
@@ -46,6 +50,7 @@ function Navbar({ page }) {
         setReportsClass("active");
         setAlarmsReportClass("inactive");
         setRulesClass("inactive");
+        setUsersReportClass("inactive");
         break;
       case "alarms-report":
         setAdminClass("inactive");
@@ -54,6 +59,7 @@ function Navbar({ page }) {
         setReportsClass("inactive");
         setAlarmsReportClass("active");
         setRulesClass("inactive");
+        setUsersReportClass("inactive");
         break;
       case "rules":
         setAdminClass("inactive");
@@ -62,6 +68,16 @@ function Navbar({ page }) {
         setReportsClass("inactive");
         setAlarmsReportClass("inactive");
         setRulesClass("active");
+        setUsersReportClass("inactive");
+        break;
+      case "users-report":
+        setAdminClass("inactive");
+        setLogsClass("inactive");
+        setAlarmsClass("inactive");
+        setReportsClass("inactive");
+        setAlarmsReportClass("inactive");
+        setRulesClass("inactive");
+        setUsersReportClass("active");
         break;
     }
   };
@@ -96,6 +112,11 @@ function Navbar({ page }) {
       <li>
         <a className={rulesClass} href="/rules">
           Rules
+        </a>
+      </li>
+      <li>
+        <a className={usersReportClass} href="/users-report">
+          Users Report
         </a>
       </li>
     </ul>
