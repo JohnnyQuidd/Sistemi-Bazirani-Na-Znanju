@@ -41,13 +41,15 @@ public class UserTrait {
     @NotNull
     private Role role;
     private String ruleTriggered;
+    private int numberOfAlarms;
 
-    public UserTrait(User user) {
+    public UserTrait(User user, int numberOfAlarms) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.lastTimeUserWasActive = user.getLastTimeUserWasActive();
         this.riskCategory = user.getRiskCategory();
         this.role = user.getRole();
+        this.numberOfAlarms = numberOfAlarms;
     }
 }

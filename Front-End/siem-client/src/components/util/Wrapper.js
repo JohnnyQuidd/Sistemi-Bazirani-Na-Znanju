@@ -6,6 +6,7 @@ import Dashboard from "../admin/Dashboard";
 import Logs from "../admin/Logs";
 import LogsReport from "../admin/LogsReport";
 import Rules from "../admin/Rules";
+import UsersReport from "../admin/UsersReport";
 import Login from "../login/Login";
 import Navbar from "./Navbar";
 
@@ -26,6 +27,7 @@ function Wrapper() {
           <Route path="/logs-report" component={LogsReport} />
           <Route path="/alarms-report" component={AlarmsReport} />
           <Route path="/rules" component={Rules} />
+          <Route path="/users-report" component={UsersReport} />
           <Route path="/" component={Login} />
         </Switch>
       </Router>

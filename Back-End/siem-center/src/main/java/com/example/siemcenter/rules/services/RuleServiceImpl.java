@@ -15,7 +15,6 @@ import org.drools.core.ClockType;
 import org.drools.template.ObjectDataCompiler;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
-import org.kie.api.definition.KiePackage;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
@@ -36,6 +35,9 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,21 +70,18 @@ public class RuleServiceImpl implements RuleService {
         this.deviceList = new ArrayList<>();
 
         session = setUpSessionForStreamProcessingMode();
-
-        // TODO: Load rules properly
-        //loadRules();
-        setGlobals();
+        setGlobals(session);
     }
 
 
-    private void setGlobals() {
-        session.setGlobal("logger", logger);
-        session.setGlobal("deviceRepository", deviceRepository);
-        session.setGlobal("alarmRepository", alarmRepository);
-        session.setGlobal("userRepository", userRepository);
-        session.setGlobal("devicesForUser", devicesForUser);
-        session.setGlobal("deviceNumber", DEVICE_NUMBER);
-        session.setGlobal("deviceList", deviceList);
+    private void setGlobals(KieSession currentSession) {
+        currentSession.setGlobal("logger", logger);
+        currentSession.setGlobal("deviceRepository", deviceRepository);
+        currentSession.setGlobal("alarmRepository", alarmRepository);
+        currentSession.setGlobal("userRepository", userRepository);
+        currentSession.setGlobal("devicesForUser", devicesForUser);
+        currentSession.setGlobal("deviceNumber", DEVICE_NUMBER);
+        currentSession.setGlobal("deviceList", deviceList);
     }
 
     private KieSession setUpSessionForStreamProcessingMode() {
@@ -97,16 +96,21 @@ public class RuleServiceImpl implements RuleService {
     }
 
     private void loadRules() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kc = ks.newKieClasspathContainer();
+
+        KieSessionConfiguration ksconf = ks.newKieSessionConfiguration();
+        ksconf.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.getId()));
+
         KnowledgeBuilder knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
         List<Rule> ruleList = ruleRepository.findAll();
         for(Rule rule : ruleList) {
             Resource r = ResourceFactory.newReaderResource(new StringReader(rule.getContent()));
-            logger.info("Loading DRL...");
-            logger.info(rule.getContent());
             knowledgeBuilder.add(r, ResourceType.DRL);
         }
         KieBase kieBase = knowledgeBuilder.newKieBase();
-        session = kieBase.newKieSession();
+        session = kieBase.newKieSession(ksconf, null);
+        setGlobals(session);
     }
 
     @Override
@@ -204,7 +208,20 @@ public class RuleServiceImpl implements RuleService {
             }
         }
 
+        if(ruleNumber == 24) {
+            users = users.stream()
+                    .filter(distinctByKey(UserTrait::getNumberOfAlarms))
+                    .filter(user -> user.getNumberOfAlarms() >= DEVICE_NUMBER)
+                    .filter(distinctByKey(UserTrait::getUsername))
+                    .collect(Collectors.toList());
+        }
+
         return fromTraitToModel(users);
+    }
+
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 
     public List<Log> fetchLogsByRegex(String regex) {
@@ -259,8 +276,7 @@ public class RuleServiceImpl implements RuleService {
                 .build();
 
         ruleRepository.save(rule);
-        // Todo: Load rules after insertion
-        //loadRules();
+        loadRules();
     }
 
     private List<User> fromTraitToModel(List<UserTrait> userTraits) {

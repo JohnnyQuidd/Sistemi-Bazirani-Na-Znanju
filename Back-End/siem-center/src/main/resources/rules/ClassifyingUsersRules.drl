@@ -85,6 +85,7 @@ rule "#18 High risk category because Admin has triggered an alarm in past 30 day
        logger.info("#18 Admin " + $user.getUsername() + " has gotten a HIGH risk category" );
 end
 
+// TODO: Set to 11h-12h for testing purposes, but should be 9h-17h in deployment
 rule "#19 High risk if admin failed 2 times to log in following by successful login before or after his shift" salience 5
     no-loop true
     when
@@ -94,8 +95,8 @@ rule "#19 High risk if admin failed 2 times to log in following by successful lo
                    || message.toLowerCase() contains "log in"
                    || message.toLowerCase() contains "log-in",
                    logType != LogType.ERROR,
-                   timestamp.getHour() < 9
-                   || timestamp.getHour() > 17
+                   timestamp.getHour() < 11
+                   || timestamp.getHour() > 12
         )
         Number(intValue >= 2) from accumulate (
             $log: Log(this != $scflLog,
