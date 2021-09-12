@@ -28,6 +28,10 @@ declare ProcessedLog
     uuid: UUID
 end
 
+declare InfoChanged
+    username: String
+end
+
 
 rule "#1 Failed to login from a device that has already failed to log in" salience 5
     when
@@ -229,7 +233,6 @@ rule "#7 Threat registered by antivirus is not dealt with in an hour from time o
         logger.info("#7 Threat registered by antivirus is not dealt with in an hour from time of detection");
 end
 
-// If in last 90 seconds were 5 or more failed logins from same device to different accounts
 rule "#8 Successful login to a system followed by a user information changed" salience 5
     when
         $log1: Log(message.toLowerCase() contains "user data changed",
@@ -254,6 +257,7 @@ rule "#8 Successful login to a system followed by a user information changed" sa
                 timestamp.isAfter($log1.getTimestamp().minusSeconds(90))
             )
         )
+        not ( InfoChanged(username == $log1.getUser().getUsername() ))
     then
         Alarm $newAlarm = new Alarm();
         $newAlarm.setMessage("Successful login to a system followed by a user information changed");
@@ -270,6 +274,9 @@ rule "#8 Successful login to a system followed by a user information changed" sa
 
         alarmRepository.save($newAlarm);
         insert($newAlarm);
+
+        InfoChanged info = new InfoChanged($log1.getUser().getUsername());
+        insert(info);
         logger.info("#8 Successful login to a system followed by a user information changed");
 end
 
