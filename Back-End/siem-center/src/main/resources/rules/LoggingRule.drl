@@ -141,7 +141,7 @@ rule "#4 An attempt to log in an account that was inactive for 90 days or more" 
         logger.info("#4 An attempt to log in an account that was inactive for 90 days or more");
 end
 
-rule "#5 15 or more failed attempts to login from a same device over a course of 5 days" salience 5
+rule "#5 15 or more failed attempts to login from a same device over the course of 5 days" salience 5
     when
         $device: Device() from deviceRepository.findAll()
         $logs: List(size >= 15) from collect (

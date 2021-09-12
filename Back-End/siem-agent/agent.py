@@ -99,10 +99,46 @@ def loginDDoS():
     print(req)
     time.sleep(0.1)
 
+def makeDeviceMalicious():
+  payload = {
+  "logType" : "ERROR",
+  "ipAddress" : "192.168.5.4",
+  "operatingSystem" : "Fedora",
+  "software" : "Paypal",
+  "username" : "Zoran55",
+  "message" : "Log regarding login subsystem"
+  }
+
+  for _ in range(31):
+    data = json.dumps(payload)
+    req = requests.post(url = API_ENDPOINT + '/logs', data = data, headers = HEADERS)
+    res = req.text
+    print(req)
+    time.sleep(0.1)
+
+def fifteenTimesFailedLogin():
+  payload = {
+    "logType" : "WARNING",
+    "ipAddress" : "192.168.1.3",
+    "operatingSystem" : "Windows 7",
+    "software" : "Paypal",
+    "username" : "Zoran55",
+    "message" : "Log regarding login subsystem"
+  }
+
+  for _ in range(15):
+    data = json.dumps(payload)
+    req = requests.post(url = API_ENDPOINT + '/logs', data = data, headers = HEADERS)
+    res = req.text
+    print(req)
+    time.sleep(0.1)
+
 def main():
   # sendRandomLogs()
   # paymentDDoS()
-  loginDDoS()
+  # loginDDoS()
+  # makeDeviceMalicious()
+  fifteenTimesFailedLogin()
 
 if __name__ == '__main__':
   main()

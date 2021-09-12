@@ -26,7 +26,7 @@ public class LogController {
     @PostMapping
     public void insertNewLog(@Valid @RequestBody LogDTO logDTO, HttpServletRequest request) {
         // We would be getting the IP address from the request in the real-world
-        // String ipAddress = request.getRemoteAddr();
+        //String ipAddress = request.getRemoteAddr();
         logsService.createLog(logDTO);
     }
 
