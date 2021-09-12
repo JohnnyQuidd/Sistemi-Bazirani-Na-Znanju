@@ -34,10 +34,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -198,11 +198,6 @@ public class RuleServiceImpl implements RuleService {
         return fetchUsersForRule(25);
     }
 
-    @Override
-    public List<User> getUsersForSixAlarmsInLastSixMonths() {
-        return fetchUsersForRule(23);
-    }
-
     private List<User> fetchUsersForRule(int ruleNumber) {
         List<UserTrait> users = new LinkedList<>();
         QueryResults userResults = session.getQueryResults("fetchUsersForReportCreation");
@@ -213,7 +208,20 @@ public class RuleServiceImpl implements RuleService {
             }
         }
 
+        if(ruleNumber == 24) {
+            users = users.stream()
+                    .filter(distinctByKey(UserTrait::getNumberOfAlarms))
+                    .filter(user -> user.getNumberOfAlarms() >= DEVICE_NUMBER)
+                    .filter(distinctByKey(UserTrait::getUsername))
+                    .collect(Collectors.toList());
+        }
+
         return fromTraitToModel(users);
+    }
+
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 
     public List<Log> fetchLogsByRegex(String regex) {

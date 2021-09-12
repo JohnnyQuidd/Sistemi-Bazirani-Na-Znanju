@@ -1,6 +1,7 @@
 dialect "mvel"
 
 import java.util.List;
+import java.util.Set;
 import java.lang.Integer;
 import java.lang.Long;
 import java.time.LocalDateTime;
@@ -48,7 +49,7 @@ rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months
         not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#23") )
     then
         logger.info("#23 user inserted in WM: " + $user.toString());
-        UserTrait $trait = new UserTrait($user);
+        UserTrait $trait = new UserTrait($user, 6);
         $trait.setRuleTriggered("#23");
         insert($trait);
 end
@@ -62,19 +63,18 @@ rule "#24 Failed attempts to login from N different devices in a time span of 12
                 $user: user,
                 $ip: device.getIpAddress()
         )
-        Number(intValue >= deviceNumber.intValue()) from accumulate (
+        $logSet: Set() from accumulate(
             $l: Log(message.toLowerCase() contains "login"
-                    || message.toLowerCase() contains "log in"
-                    || message.toLowerCase() contains "log-in",
-                    user == $user,
-                    device.getIpAddress() != $ip,
-                    logType == LogType.ERROR
-            ) over window:time(12h), count($l)
+                                || message.toLowerCase() contains "log in"
+                                || message.toLowerCase() contains "log-in",
+                                user == $user,
+                                logType == LogType.ERROR
+                        ) over window:time(12h),
+                        collectSet($l.getDevice().getIpAddress())
         )
-        not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#24") )
     then
-        logger.info("#24 user inserted in WM: " + $user.toString());
-        UserTrait $trait = new UserTrait($user);
+        logger.info("#24 user inserted in WM: " + $user.getUsername() + " " + $logSet.size());
+        UserTrait $trait = new UserTrait($user, $logSet.size());
         $trait.setRuleTriggered("#24");
         insert($trait);
 end
@@ -91,7 +91,7 @@ rule "#25 Users that triggered at least 10 alarms in past 10 days" salience 5
         not ( UserTrait(username == $user.getUsername(), ruleTriggered == "#25") )
     then
         logger.info("#25 user inserted in WM: " + $user.toString());
-        UserTrait $trait = new UserTrait($user);
+        UserTrait $trait = new UserTrait($user, 10);
         $trait.setRuleTriggered("#25");
         insert($trait);
         insert(new ProcessedAlarm("#25", $alarm.getId()));

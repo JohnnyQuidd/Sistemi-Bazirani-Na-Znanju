@@ -31,8 +31,6 @@ public interface RuleService {
 
     List<User> getUsersForTenAlarmsInTenPastDays();
 
-    List<User> getUsersForSixAlarmsInLastSixMonths();
-
     List<Log> fetchLogsByRegex(String regex);
 
     List<Log> fetchLogsByRegexAndSession(String regex, KieSession session);
