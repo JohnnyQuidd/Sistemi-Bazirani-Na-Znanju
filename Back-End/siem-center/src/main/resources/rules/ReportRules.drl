@@ -33,6 +33,10 @@ end
 declare trait AlarmUser
 end
 
+query fetchUsersForReportCreation()
+    $user: UserTrait()
+end
+
 rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months" salience 1
     when
         Alarm()
@@ -47,10 +51,6 @@ rule "#23 Fetch all users that have triggered at least 6 alarms in past 6 months
         UserTrait $trait = new UserTrait($user);
         $trait.setRuleTriggered("#23");
         insert($trait);
-end
-
-query fetchUsersForReportCreation()
-    $user: UserTrait()
 end
 
 rule "#24 Failed attempts to login from N different devices in a time span of 12 hours" salience 5

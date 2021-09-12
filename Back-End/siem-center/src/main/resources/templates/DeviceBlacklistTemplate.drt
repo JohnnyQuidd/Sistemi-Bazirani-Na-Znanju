@@ -6,6 +6,7 @@ days
 import java.util.List;
 import java.util.UUID;
 import java.lang.String;
+import java.lang.Integer;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import com.example.siemcenter.common.models.Device;
@@ -25,6 +26,8 @@ global DeviceRepository deviceRepository;
 global AlarmRepository alarmRepository;
 global UserRepository userRepository;
 global DevicesForUser devicesForUser;
+global Integer deviceNumber;
+global List<String> deviceList;
 
 
 template "DeviceBlacklistTemplate"
